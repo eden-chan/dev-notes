@@ -49,22 +49,22 @@ function add_js(foo, bar, foobar) {
 // In Typescript, we can overload a function by specifying all function signatures aka overload signatures,followed by
 // a signature aka implementation signature.
 
-function test(name: string): string; // overloaded signature
-function test(age: number): string; // overloaded signature
-function test(single: boolean): string; // overloaded signature
-function test(value: string | number | boolean): string {
-  // implementation signature
-  switch (typeof value) {
-    case "string":
-      return `My name is ${value}.`;
-    case "number":
-      return `I'm ${value} years old.`;
-    case "boolean":
-      return value ? "I'm single." : "I'm not single.";
-    default:
-      throw new Error("Invalid Operation!");
-  }
-}
+// function test(name: string): string; // overloaded signature
+// function test(age: number): string; // overloaded signature
+// function test(single: boolean): string; // overloaded signature
+// function test(value: string | number | boolean): string {
+//   // implementation signature
+//   switch (typeof value) {
+//     case "string":
+//       return `My name is ${value}.`;
+//     case "number":
+//       return `I'm ${value} years old.`;
+//     case "boolean":
+//       return value ? "I'm single." : "I'm not single.";
+//     default:
+//       throw new Error("Invalid Operation!");
+//   }
+// }
 
 // The implementation signature must be compatible with all the overloaded signatures,
 // always be the last in the list, and take any or a union type as the type of its parameters.
@@ -135,15 +135,31 @@ interface Document {
 
 // An immediately-invoked function expression (IIFE) is a design pattern that produces a lexical scope using function scoping.
 //  IIFE can be used to avoid variable hoisting from within blocks or to prevent us from polluting the global scope, for example:
+// IMO this is just confusion AF 🤡
+// let bar = 0; // global
 
-let bar = 0; // global
+// (function () {
+//   let foo: number = 0; // In scope of this function
+//   bar = 1; // Access global scope
+//   console.log(bar); // 1
+//   console.log(foo); // 0
+// })();
 
-(function () {
-  let foo: number = 0; // In scope of this function
-  bar = 1; // Access global scope
-  console.log(bar); // 1
-  console.log(foo); // 0
-})();
+// console.log(bar); // 1
+// // console.log(foo); // Error
 
-console.log(bar); // 1
+// We can also pass a variable to the IIFE to have better control over the creation of variables outside its scope:
+
+// let bar = 0; // global
+// let topScope = window;
+
+// (function(global: any) {
+//     let foo: number = 0; // In scope of this function
+//     console.log(global.bar); // 0
+//     global.bar = 1; // Access global scope
+//     console.log(global.bar); // 1
+//     console.log(foo); // 0
+// })(topScope);
+
+// console.log(bar); // 1
 // console.log(foo); // Error
