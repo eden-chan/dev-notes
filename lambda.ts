@@ -66,7 +66,7 @@ const add = (a: number, b: number) => (number) => a + b;
 const addMany = (...numbers: number[]) =>
   numbers.reduce((acc, cur) => acc + cur, 0);
 
-console.log(addMany(1, 2, 3, 4, 5));
+console.log(addMany(1, 2, 3, 4, 5)); // prints 15
 
 // A higher-order fnuction is a function that does at least one of the following:
 //  takes one or more functions as arguments
@@ -93,4 +93,4 @@ const _sayHello = () => {
   console.log("Curried hello world");
 };
 const _delayedSayHello = _addDelay(_sayHello, 1000);
-_delayedSayHello();
+_delayedSayHello(); // prints "Curried hello world" after 1000ms
