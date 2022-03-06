@@ -1,8 +1,6 @@
 """
 Use doctest with python3 -m data-model -v 
 
-The example module supplies one function, factorial().  For example,
-
 >>> beer_card = Card('7', 'diamonds')
 >>> beer_card
 Card(rank='7', suit='diamonds')
