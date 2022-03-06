@@ -40,6 +40,7 @@ class Vector:
     def __abs__(self):
         return math.hypot(self.x, self.y)
 
+    # Returns False if absolute value is zero. Else, return true. 
     def __bool__(self):
         return bool(abs(self))
 
