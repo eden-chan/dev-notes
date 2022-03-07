@@ -16,30 +16,6 @@ False
 (10, 'alpha', [1, 2, 99])
 """
 
-# Unpacking 
-
-# Parallel assignment 
-"""
->>> ab = (1, 2)
->>> a,b = ab
->>> a
-1
->>> b
->>> b, a = a, b
-"""
-
-# Using * to grab excess items
-"""
->>> a, b, *rest = range(5)
->>> a, b, rest
-(0, 1, [2, 3, 4])
->>> a, b, *rest = range(3)
->>> a, b, rest
-(0, 1, [2])
->>> a, b, *rest = range(2)
->>> a, b, rest
-(0, 1, [])
-"""
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
