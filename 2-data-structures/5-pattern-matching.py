@@ -1,4 +1,6 @@
 # Prereq concept of pattern matching (new for python 3.10) https://docs.python.org/3.10/whatsnew/3.10.html#pep-634-structural-pattern-matching
+# Match/Case is similar to switch/case but with destructuring, a more advanced form of unpacking. 
+
 """
 >>> warning_error()
 A warning has been received.
@@ -49,6 +51,7 @@ def location(point):
             print("The point is located somewhere else on the plane.")
         case _:
             print("Not a point")
+
 # Pattern matching with nested patterns
 def locations(points):
     match points:
@@ -62,6 +65,15 @@ def locations(points):
             print(f"Two points on the Y axis at {y1}, {y2} are in the list.")
         case _:
             print("Something else is found in the list.")
+
+# Pattern matching with Guards
+# statement runs only if the pattern matches and the guard expression is truthy.
+def locationCheck(point): 
+    match point:
+        case Point(x, y) if x == y:
+            print(f"The point is located on the diagonal Y=X at {x}.")
+        case Point(x, y):
+            print(f"Point is not on the diagonal.")
 
 
 # complex patterns and wildcards
@@ -77,6 +89,13 @@ def warning_error(test_variable=('warning',404,40)):
 
 # Book 
 
+# You can typecheck in your destructuring 
+
+# case [str(name), _, _, (float(lat), float(lon))]:
+# The expressions str(name) and float(lat) look like constructor calls, but in the context of a pattern, that syntax works as a runtime type check:
+
+#    case [str(name), *_, (float(lat), float(lon))]:
+#  match to a list starting with a str, and ending with a nested sequence of two floats
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
