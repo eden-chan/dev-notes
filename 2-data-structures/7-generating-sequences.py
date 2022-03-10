@@ -1,6 +1,18 @@
 
-#  Using + and * with Sequences creates a new sequence
 """
+Cartesian Products
+>>> colors = ['black', 'white']
+>>> sizes = ['S', 'M', 'L']
+>>> for tshirt in (f'{c} {s}' for c in colors for s in sizes):  
+...     print(tshirt)
+black S
+black M
+black L
+white S
+white M
+white L
+
+ Using + and * with Sequences creates a new sequence
 >>> l = [1, 2, 3]
 >>> l + [4, 5]
 [1, 2, 3, 4, 5]
