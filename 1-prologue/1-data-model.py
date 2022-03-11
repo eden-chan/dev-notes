@@ -41,7 +41,6 @@ Card(rank='K', suit='hearts')
 Card(rank='Q', suit='hearts')
 ...
 
-
 # Iteration is often implicit. If a collection has no __contains__ method, 
 # the in operator does a sequential scan. 
 # Case in point: in works with our FrenchDeck class because it is iterable. Check it out:

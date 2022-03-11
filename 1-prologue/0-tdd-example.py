@@ -1,4 +1,6 @@
 """
+One good approach to learning is through test driven development. Write the test cases first so you understand the behavior of the program, before implementing them. 
+We use the python module doctest which lets us write test cases in REPL form. 
 This is the "example" module.
 
 The example module supplies one function, factorial().  For example,
