@@ -202,3 +202,146 @@ End Playground.
 Definition b : bool := true.
 Check Playground.b : rgb.
 Check b : bool.
+
+Module TuplePlayground.
+
+Inductive bit : Type :=
+  | B0
+  | B1.
+Inductive nybble : Type :=
+  | bits (b0 b1 b2 b3 : bit).
+Check (bits B1 B0 B1 B0)
+  : nybble.
+
+(*
+the bits constructor is a wrapper for its contents
+unwrapping can be done by pattern-matching
+Use underscore ( _ ) as a wildcard  pattern to avoid inventing variable 
+names that aren't used. 
+*)
+Definition all_zero (nb : nybble) : bool :=
+  match nb with
+  | (bits B0 B0 B0 B0) => true
+  | (bits _ _ _ _) => false
+  end.
+Example all_zero_test1: (all_zero (bits B1 B0 B1 B0)) = false.
+Proof. simpl. reflexivity. Qed.
+Example all_zero_test2: (all_zero (bits B0 B0 B0 B0)) = true.
+Proof. simpl. reflexivity. Qed.
+End TuplePlayground.
+
+(* Use module so it doesn't conflict with later usages of Nats from stdlib *)
+Module NatPlayground.
+
+
+(* 
+there is a representation of numbers that is even simpler than binary, namely unary (base 1)
+ *)
+
+ Inductive nat : Type :=
+  | O            (* capital letter O stands for zero *)
+  | S (n : nat). (* S stands for successor *)
+
+
+(* This is just a representation of numbers: a way of writing them down
+The names S and O are arbitrary, and at this point they have no special meaning
+-- they are just two different marks that we can use to write down numbers (together with a rule that says any nat will be written as some string of S marks followed by an O).
+If we like, we can write essentially the same definition this way: *)
+Inductive nat' : Type :=
+  | stop
+  | tick (foo : nat').
+
+(*
+The interpretation of these marks comes from how we use them to compute.
+*)
+
+Definition pred (n : nat) : nat :=
+  match n with
+  | O => O
+  | S n' => n'
+  end.
+
+(* Since natural numbers are such a pervasive form of data, 
+Coq has built-in parser and printer for them, 
+printing numbers in decimal by default.  *)
+Check (S (S (S (S O)))).
+(* ===> 4 : nat *)
+Definition minustwo (n : nat) : nat :=
+  match n with
+  | O => O
+  | S O => O
+  | S (S n') => n'
+  end.
+Example minus_two_test: (minustwo (S (S (S (S O))))) = (S (S O)).
+Proof. simpl. reflexivity. Qed.
+
+Check S        : nat -> nat.
+Check pred     : nat -> nat.
+Check minustwo : nat -> nat.
+
+(* 
+However, there is a fundamental difference between S and the other two: 
+functions like pred and minustwo are defined by giving computation rules 
+-- e.g., the definition of pred says that pred 2 can be simplified to 1 --
+while the definition of S has no such behavior attached. 
+Although it is like a function in the sense that it can be applied to 
+an argument, it does not do anything at all! It is just a way
+of writing down numbers. *)
+
+(* 
+For most interesting computations involving numbers, 
+simple pattern matching is not enough: we also need recursion.  
+Such functions are introduced using the keyword Fixpoint instead of Definition. 
+*)
+
+Fixpoint even (n:nat) : bool :=
+  match n with
+  | O        => true
+  | S O      => false
+  | S (S n') => even n'
+  end.
+(* We can define odd in a similar way, but basing it off even is simpler *)
+Definition odd (n:nat) : bool :=
+  negb (even n).
+
+Example test_odd1:    odd (S O) = true.
+Proof. simpl. reflexivity. Qed.
+Example test_odd2:    odd (S (S (S (S O)))) = false.
+Proof. simpl. reflexivity. Qed.
+
+(* Multi-argument functions by recursion *)
+Fixpoint plus (n : nat) (m : nat) : nat :=
+  match n with
+  | O => m
+  | S n' => S (plus n' m)
+  end.
+
+Example test_add1: (plus (S (S (S O))) (S (S O))) = (S (S (S (S (S O))))).
+Proof. simpl. reflexivity. Qed.
+
+(* ===> 5 : nat *)
+(*      plus 3 2
+   i.e. plus (S (S (S O))) (S (S O))
+    ==> S (plus (S (S O)) (S (S O)))
+          by the second clause of the match
+    ==> S (S (plus (S O) (S (S O))))
+          by the second clause of the match
+    ==> S (S (S (plus O (S (S O)))))
+          by the second clause of the match
+    ==> S (S (S (S (S O))))
+          by the first clause of the match
+   i.e. 5  *)
+
+(* 
+As a notational convenience, if two or more arguments have the same type, 
+they can be written together. In the following definition, (n m : nat)
+means just the same as if we had written (n : nat) (m : nat).
+*)
+Fixpoint mult (n m : nat) : nat :=
+  match n with
+  | O => O
+  | S n' => plus m (mult n' m)
+  end.
+Example test_mult1: (mult (S (S O)) (S (S O))) = (S (S (S (S O)))).
+Proof. simpl. reflexivity. Qed.
+End NatPlayground.
