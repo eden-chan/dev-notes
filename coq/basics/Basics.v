@@ -120,3 +120,85 @@ Example test_andb33:                 (andb3 true false true) = false.
 Proof. simpl. reflexivity. Qed. 
 Example test_andb34:                 (andb3 true true false) = false.
 Proof. simpl. reflexivity. Qed. 
+
+(* Types *)
+
+Check true.
+(* ===> true : bool *)
+
+(* If followed by colon and a type, Coq will verify match, and halt with error if not *)
+Check true
+  : bool.
+Check (negb true)
+  : bool.
+(* Check (negb true)  *)
+  (* : day.  *)
+(* ==> The term "negb true" has type "bool" while it is expected to have type "day". *)
+
+Check negb 
+ : bool -> bool. 
+Check andb 
+  : bool -> bool -> bool. 
+Check andb3 
+  : bool -> bool -> bool -> bool. 
+
+
+
+(* 
+An Inductive definition does two things:
+It defines a set of new constructors. E.g., red, primary, true, false, monday, etc. are constructors.
+It groups them into a new named type, like bool, rgb, or color.
+ 
+Constructor expressions are formed by applying a constructor 
+to zero or more other constructors or constructor expressions
+matching the structure of the definition
+
+
+red, green, and blue belong to the set rgb;
+black and white belong to the set color;
+if p is a constructor expression belonging to the set rgb, 
+then primary p (pronounced "the constructor primary applied to the argument p")
+is a constructor expression belonging to the set color; and
+constructor expressions formed in these ways are the only ones belonging
+to the sets rgb and color.
+*)
+Inductive rgb : Type :=
+  | red
+  | green
+  | blue.
+Inductive color : Type :=
+  | black
+  | white
+  | primary (p : rgb).
+
+Definition monochrome (c : color) : bool :=
+  match c with
+  | black => true
+  | white => true
+  | primary p => false
+  end.
+Definition isred (c : color) : bool :=
+  match c with
+  | black => false
+  | white => false
+  | primary red => true
+  | primary _ => false
+  end.
+(* 
+Modules
+
+Coq provides a module system to aid in organizing large developments.
+We won't need most of its features, but one is useful: 
+If we enclose a collection of declarations between Module X and End X markers, 
+then, in the remainder of the file after the End, these definitions are referred
+to by names like X.foo instead of just foo. 
+We will use this feature to limit the scope of definitions, 
+so that we are free to reuse names.
+*)
+
+Module Playground.
+  Definition b : rgb := blue.
+End Playground.
+Definition b : bool := true.
+Check Playground.b : rgb.
+Check b : bool.
