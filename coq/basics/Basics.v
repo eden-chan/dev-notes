@@ -396,6 +396,17 @@ Proof. simpl. reflexivity. Qed.
 Check factorial.
 End NatPlayground.
 
+Notation "x + y" := (plus x y)
+                       (at level 50, left associativity)
+                       : nat_scope.
+Notation "x - y" := (minus x y)
+                       (at level 50, left associativity)
+                       : nat_scope.
+Notation "x * y" := (mult x y)
+                       (at level 40, left associativity)
+                       : nat_scope.
+Check ((0 + 1) + 1) : nat.
+
 (* Note the use of nested matches (we could also have used a simultaneous match, as we did in minus.) *)
 Fixpoint eqb (n m : nat) : bool :=
   match n with
@@ -407,4 +418,125 @@ Fixpoint eqb (n m : nat) : bool :=
             | O => false
             | S m' => eqb n' m'
             end
-  end.
+end.
+
+Fixpoint leb (n m : nat) : bool := 
+  match n with 
+    | O => true 
+    | S n' => 
+      match m with 
+        | O => false 
+        | S m' => leb n' m'
+      end
+end. 
+
+Example test_leb1: leb 0 2 = true. 
+Proof. simpl. reflexivity. Qed.
+Example test_leb2: leb 2 2 = true. 
+Proof. simpl. reflexivity. Qed.
+Example test_leb3: leb 5 4 = false. 
+Proof. simpl. reflexivity. Qed.
+
+Notation "x =? y" := (eqb x y) (at level 70) : nat_scope.
+Notation "x <=? y" := (leb x y) (at level 70) : nat_scope.
+Example test_leb3': (4 <=? 2) = false.
+Proof. simpl. reflexivity. Qed.
+
+Definition ltb (n m : nat) : bool := 
+  andb (leb n m) (negb (eqb n m)).
+
+
+Example test_ltb1: ltb 0 2 = true. 
+Proof. simpl. reflexivity. Qed.
+Example test_ltb2: ltb 2 2 = false. 
+Proof. simpl. reflexivity. Qed.
+Example test_ltb3: ltb 5 4 = false. 
+Proof. simpl. reflexivity. Qed.
+
+
+(* Proof by Simplification *)
+(* simpl is used when we want to understand the new goal it creates and not blindly expand definitions *)
+(*  Informally, to prove theorems of this form, we generally start by saying
+"Suppose n is some number..." Formally, this is achieved in the proof by intros n,
+ which moves n from the quantifier in the goal to a context of current assumptions. *)
+Theorem plus_O_n' : forall n : nat, 0 + n = n.
+Proof.
+  intros n. reflexivity. Qed.
+
+  (* The keywords intros, simpl, and reflexivity are examples of tactics. 
+  A tactic is a command that is used between Proof and Qed to guide the process 
+  of checking some claim we are making.  *)
+(* _l suffix is pronounced "on the left" *)
+Theorem plus_1_l : forall n:nat, 1 + n = S n.
+Proof.
+  intros n. reflexivity. Qed.
+Theorem mult_0_l : forall n:nat, 0 * n = 0.
+Proof.
+  intros n. reflexivity. Qed.
+
+Theorem plus_id_example : forall n m:nat,
+  n = m ->
+  n + n = m + m.
+
+Proof.
+  (* move both quantifiers into the context: *)
+  intros n m.
+  (* move the hypothesis into the context: *)
+  intros shamalamadingdong.
+  (* rewrite the goal using the hypothesis: *)
+
+  (* the arrow left to right and right to left has nothing to do with implication 
+  it just tells coq which direction to apply the rewrite. defaulting to -> *)
+  (* rewrite -> shamalamadingdong. *)
+  rewrite <- shamalamadingdong.
+  reflexivity. Qed.
+
+
+(* 
+Admitted makes Coq skip trying to prove this theorem 
+and just accept it as a given. 
+Useful for developing longer proofs, 
+since we can state subsidiary lemmas that can be useful 
+for making some larger argument, 
+use Admitted to accept them on faith for the moment,
+and continue working on the main argument until we are sure it makes sense; 
+then we can go back and fill in the proofs we skipped.  *)
+Theorem plus_id_exercise : forall n m o : nat,
+  n = m -> m = o -> n + m = m + o.
+Proof.
+  intros n m o. 
+  intros H. 
+  intros H2.
+  rewrite H.
+  rewrite H2. 
+  reflexivity. Qed. 
+
+  (* Check is also used to examine statements of previously declared lemmas and theorems *)
+Check mult_n_O.
+(* ===> forall n : nat, 0 = n * 0 *)
+Check mult_n_Sm.
+(* ===> 
+forall n m : nat, n * m + n = n * S m 
+*)
+
+(* We can use the rewrite tactic with a previously proved theorem instead
+ of a hypothesis from the context. If the statement of the previously proved theorem 
+ involves quantified variables, as in the example below, Coq tries to instantiate them 
+ by matching with the current goal. *)
+
+Theorem mult_n_0_m_0 : forall p q : nat,
+  (p * 0) + (q * 0) = 0.
+Proof.
+  intros p q.
+  rewrite <- mult_n_O.
+  rewrite <- mult_n_O.
+  reflexivity. Qed.
+
+Theorem mult_n_1 : forall p : nat,
+  p * 1 = p.
+Proof.
+  intros p. 
+  rewrite <- mult_n_Sm.
+  rewrite <- mult_n_O. 
+  rewrite -> plus_O_n'. 
+  reflexivity. Qed. 
