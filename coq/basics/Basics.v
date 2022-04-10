@@ -18,13 +18,12 @@ Definition next_weekday (d:day) : day :=
   | sunday    => monday
   end.
 
-(* Compute (next_weekday friday). *)
+Compute (next_weekday friday).
 (* ==> monday : day *)
 (* Compute (next_weekday (next_weekday saturday)). *)
 (* ==> tuesday : day *)
 Example test_next_weekday:
   (next_weekday (next_weekday saturday)) = tuesday.
-
 Proof. simpl. reflexivity. Qed.
 
 
@@ -197,8 +196,10 @@ so that we are free to reuse names.
 *)
 
 Module Playground.
-  Definition b : rgb := blue.
+Definition b : rgb := blue.
 End Playground.
+
+
 Definition b : bool := true.
 Check Playground.b : rgb.
 Check b : bool.
@@ -313,7 +314,7 @@ Proof. simpl. reflexivity. Qed.
 Fixpoint plus (n : nat) (m : nat) : nat :=
   match n with
   | O => m
-  | S n' => S (plus n' m)
+  | S n' => S (plus n' m) (* Predicate (S n' => n') *)
   end.
 
 Example test_add1: (plus (S (S (S O))) (S (S O))) = (S (S (S (S (S O))))).
@@ -337,11 +338,73 @@ As a notational convenience, if two or more arguments have the same type,
 they can be written together. In the following definition, (n m : nat)
 means just the same as if we had written (n : nat) (m : nat).
 *)
-Fixpoint mult (n m : nat) : nat :=
-  match n with
-  | O => O
-  | S n' => plus m (mult n' m)
-  end.
+Fixpoint mult (n m : nat) : nat := 
+    match n with 
+      | O => O 
+      | S n' => (plus m (mult n' m))
+    end.
+
 Example test_mult1: (mult (S (S O)) (S (S O))) = (S (S (S (S O)))).
 Proof. simpl. reflexivity. Qed.
+
+(* Match two expressions at once with a comma between them *)
+Fixpoint minus (n m : nat) : nat :=
+  match n, m with 
+    | O, _ => O 
+    | S _, O => O
+    | S n', S m' => minus n' m'
+  end.
+  
+Example test_minus1: (minus O O) = O.
+Proof. simpl. reflexivity. Qed.
+Example test_minus2: (minus (S O) O) = O.
+Proof. simpl. reflexivity. Qed.
+Example test_minus3: (minus (S O) (S O)) = O.
+Proof. simpl. reflexivity. Qed.
+
+Fixpoint exp (base power : nat) : nat :=
+  match base, power with 
+    | _, O => S O 
+    | O, _ => O 
+    | base, S power' => mult base (exp base power') 
+  end. 
+
+Example test_exp0: exp O (S O) = O.
+Proof. simpl. reflexivity. Qed.
+Example test_exp1: exp O O = S O.
+Proof. simpl. reflexivity. Qed.
+Example test_exp2: exp (S O) O = S O.
+Proof. simpl. reflexivity. Qed.
+Example test_exp3: exp (S (S O)) (S (S (S O))) = (S (S (S (S (S (S (S (S O)))))))).
+Proof. simpl. reflexivity. Qed.
+
+Fixpoint factorial (n : nat) : nat :=
+  match n with 
+    | O => S O 
+    | S n' => mult n (factorial n')
+  end. 
+
+Example test_factorial0: factorial O = S O. 
+Proof. simpl. reflexivity. Qed.
+Example test_factorial1: factorial( S O) = S O. 
+Proof. simpl. reflexivity. Qed.
+Example test_factorial2: factorial (S (S O)) = S (S O). 
+Proof. simpl. reflexivity. Qed.
+Example test_factorial3: factorial (S (S (S O))) = S (S (S (S (S (S O))))). 
+Proof. simpl. reflexivity. Qed.
+
+Check factorial.
 End NatPlayground.
+
+(* Note the use of nested matches (we could also have used a simultaneous match, as we did in minus.) *)
+Fixpoint eqb (n m : nat) : bool :=
+  match n with
+  | O => match m with
+         | O => true
+         | S m' => false
+         end
+  | S n' => match m with
+            | O => false
+            | S m' => eqb n' m'
+            end
+  end.
