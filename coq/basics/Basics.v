@@ -539,4 +539,86 @@ Proof.
   rewrite <- mult_n_Sm.
   rewrite <- mult_n_O. 
   rewrite -> plus_O_n'. 
-  reflexivity. Qed. 
+  reflexivity. Qed.   
+
+
+(* Proof by Case Analysis *)
+
+Theorem plus_1_neq_0 : forall n : nat,
+  (n + 1) =? 0 = false.
+Proof.
+  intros n. destruct n as [| n'] eqn:E. 
+  - reflexivity.
+  - reflexivity. Qed.
+(* 
+The destruct generates two subgoals, which we must then prove, 
+separately, in order to get Coq to accept the theorem.
+
+The annotation "as [| n']" is called an intro pattern. 
+It tells Coq what variable names to introduce in each subgoal. 
+In general, what goes between the square brackets is a list 
+of lists of names, separated by |.
+eqn:E annotation tells destruct to give the name 
+E to this equation. Leaving off the eqn:E annotation 
+causes Coq to elide these assumptions in the subgoals. 
+This slightly streamlines proofs where the assumptions are not 
+explicitly used, but it is better practice to keep them for
+the sake of documentation, as they can help keep you oriented 
+when working with the subgoals. 
+- are bullets, marking the parts of the proof that correcspond to the generated subgoals
+the part of the proof script that comes after a bullet is the entire proof for the 
+corresponding subgoal. bullets are optional, but use them for readability, and also
+disambiguate which subgoal coq is trying to complete before trying to verify the next one
+preventing proofs for different subgoals from getting mixed up. 
+these issues are especially important when fragile proofs lead to long debugging. 
+
+*)
+(* involutive - negation is its own inverse *)
+Theorem negb_involutive : forall b : bool,
+  negb (negb b) = b.
+Proof.
+  intros b. destruct b eqn:E.
+  - reflexivity.
+  - reflexivity. Qed.
+
+Theorem andb_commutative : forall b c, andb b c = andb c b.
+Proof.
+  intros b c. destruct b eqn:Eb.
+  - destruct c eqn:Ec.
+    + reflexivity.
+    + reflexivity.
+  - destruct c eqn:Ec.
+    + reflexivity.
+    + reflexivity.
+Qed.
+
+Theorem andb_commutative' : forall b c, andb b c = andb c b.
+Proof.
+  intros b c. destruct b eqn:Eb.
+  { destruct c eqn:Ec.
+    { reflexivity. }
+    { reflexivity. } }
+  { destruct c eqn:Ec.
+    { reflexivity. }
+    { reflexivity. } }
+Qed.
+
+Theorem andb3_exchange :
+  forall b c d, andb (andb b c) d = andb (andb b d) c.
+Proof.
+  intros b c d. destruct b eqn:Eb.
+  - destruct c eqn:Ec. 
+    -- destruct d eqn:Ed.
+      + reflexivity.
+      + reflexivity.
+    -- destruct d eqn:Ed.
+      + reflexivity.
+      + reflexivity.
+  - destruct c eqn:Ec. 
+    -- destruct d eqn:Ed.
+      + reflexivity.
+      + reflexivity.
+    -- destruct d eqn:Ed.
+      + reflexivity.
+      + reflexivity.  
+Qed.
