@@ -622,3 +622,122 @@ Proof.
       + reflexivity.
       + reflexivity.  
 Qed.
+
+Theorem andb_true_elim2 : forall b c : bool,
+  andb b c = true -> c = true.
+Proof.
+  intros b c. destruct b eqn:Eb. 
+  - destruct c eqn:Ec. 
+    + intros H.
+      reflexivity.
+    + intros H.
+      rewrite <- H.
+      reflexivity.  
+  - destruct c eqn:Ec. 
+    + intros H.
+      reflexivity.
+    + intros H.
+      rewrite <- H.
+      reflexivity.
+Qed.
+
+(* many proofs perform case analysis on a
+ variable right after introducing it: 
+ [| n] is intro + destruct *)
+Theorem plus_1_neq_0' : forall n : nat,
+  (n + 1) =? 0 = false.
+Proof.
+  intros [|n].
+  - reflexivity.
+  - reflexivity. Qed.
+
+(* If there are no constructor arguments that need names,
+  we can just write [] to get the case analysis. *)
+Theorem andb_commutative'' :
+  forall b c, andb b c = andb c b.
+Proof.
+  intros [] [].
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+Theorem zero_nbeq_plus_1 : forall n : nat,
+  0 =? (n + 1) = false.
+Proof. 
+  intros n. destruct n eqn:E.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+
+(* Fixpoints and Structural Recursion *)
+(* Recursive calls only on strictly smaller values of n 
+implies tha all calls to plus' will eventually terminate.
+Coq demands that some argument of every Fixpoint defn is "decreasing"
+This requirement guarantees every function defined in Coq
+will terminate on all inputs. *)
+Fixpoint plus' (n : nat) (m : nat) : nat :=
+  match n with
+  | O => m
+  | S n' => S (plus' n' m)
+  end.
+
+  (* To get a concrete sense of this, find a way to write a sensible Fixpoint definition (of a simple function on numbers, say) that does terminate on all inputs, but that Coq will reject because of this restriction. (If you choose to turn in this optional exercise as part of a homework assignment, make sure you comment out your solution so that it doesn't cause Coq to reject the whole file!) *)
+(* todo: *)
+
+Theorem identity_fn_applied_twice :
+  forall (f : bool -> bool),
+  (forall (x : bool), f x = x) ->
+  forall (b : bool), f (f b) = b.
+Proof.
+  intros f.
+  intros x.  
+  intros b.
+  rewrite -> x.
+  rewrite -> x.
+  reflexivity.
+Qed.
+
+Theorem negation_fn_applied_twice :
+  forall (f : bool -> bool),
+  (forall (x : bool), f x = negb x) ->
+  forall (b : bool), f (f b) = b.
+Proof.
+  intros f.
+  intros x.  
+  intros b.
+  rewrite -> x. 
+  rewrite -> x.
+  rewrite -> negb_involutive.
+  reflexivity.
+Qed.
+
+
+
+
+(* 3 stars *)
+Theorem andb_eq_orb :
+  forall (b c : bool),
+  (andb b c = orb b c) ->
+  b = c.
+Proof. 
+intros b c. 
+destruct b eqn:Eb. 
+- destruct c eqn:Ec. 
+  + reflexivity.
+  + simpl.
+  intros H. (* wtf *)
+  rewrite H. 
+  reflexivity.
+- destruct c eqn: Ec. 
+  + simpl. 
+  intros H. 
+  rewrite H. 
+  reflexivity.
+  + simpl. 
+  intros H.
+  reflexivity.
+Qed.
+
