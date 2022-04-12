@@ -1,2 +1,12 @@
 **/__pycache__
 **/.vscode/
+
+
+# Ignore coq compiled files with extensions .vo(k|s)
+**/*.v*
+**/.*.aux
+**/*.glob
+
+# Ignore Makefile outputs
+**/*.d
+**/*.conf
