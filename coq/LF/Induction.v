@@ -87,7 +87,7 @@ Proof.
         + (* m = S m' *) simpl. reflexivity.
     - (* n = S n' *) induction m as [| m' IHm'].
         + (* m = 0 *) rewrite add_0_r. simpl. rewrite <- add_1_Sn. reflexivity.
-        + (* m = S m' *) simpl.  rewrite <- IHn'. rewrite <- IHn'. rewrite <- IHn'. reflexivity.  
+        + (* m = S m' *) simpl.  rewrite <- IHn'. \rewrite <- IHn'. rewrite <- IHn'. reflexivity.  
 Qed. 
 
 Theorem plus_n_Sm_r : forall n m : nat,
@@ -99,10 +99,10 @@ Proof.
         + (* m = S m' *) simpl. rewrite add_0_r. reflexivity.
     - (* n = S n' *) induction m as [| m' IHm'].
         + (* m = 0 *) rewrite add_0_r. simpl. reflexivity.
-        + (* m = S m' *) simpl. 
+        + (* m = S m' *)  Abort.
 
             (* TODO SOLVE THIS LEMMA THEN PROVE BIG BOY LEMMA ADD_ASSOC *)
-Qed. 
+
 
 Theorem add_comm : forall n m : nat,
   n + m = m + n.
