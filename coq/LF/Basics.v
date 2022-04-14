@@ -18,7 +18,7 @@ Definition next_weekday (d:day) : day :=
   | sunday    => monday
   end.
 
-Compute (next_weekday friday).
+(* Compute (next_weekday friday). *)
 (* ==> monday : day *)
 (* Compute (next_weekday (next_weekday saturday)). *)
 (* ==> tuesday : day *)
@@ -120,28 +120,6 @@ Proof. simpl. reflexivity. Qed.
 Example test_andb34:                 (andb3 true true false) = false.
 Proof. simpl. reflexivity. Qed. 
 
-(* Types *)
-
-Check true.
-(* ===> true : bool *)
-
-(* If followed by colon and a type, Coq will verify match, and halt with error if not *)
-Check true
-  : bool.
-Check (negb true)
-  : bool.
-(* Check (negb true)  *)
-  (* : day.  *)
-(* ==> The term "negb true" has type "bool" while it is expected to have type "day". *)
-
-Check negb 
- : bool -> bool. 
-Check andb 
-  : bool -> bool -> bool. 
-Check andb3 
-  : bool -> bool -> bool -> bool. 
-
-
 
 (* 
 An Inductive definition does two things:
@@ -200,9 +178,9 @@ Definition b : rgb := blue.
 End Playground.
 
 
+
 Definition b : bool := true.
-Check Playground.b : rgb.
-Check b : bool.
+
 
 Module TuplePlayground.
 
@@ -211,8 +189,6 @@ Inductive bit : Type :=
   | B1.
 Inductive nybble : Type :=
   | bits (b0 b1 b2 b3 : bit).
-Check (bits B1 B0 B1 B0)
-  : nybble.
 
 (*
 the bits constructor is a wrapper for its contents
@@ -265,8 +241,7 @@ Definition pred (n : nat) : nat :=
 (* Since natural numbers are such a pervasive form of data, 
 Coq has built-in parser and printer for them, 
 printing numbers in decimal by default.  *)
-Check (S (S (S (S O)))).
-(* ===> 4 : nat *)
+
 Definition minustwo (n : nat) : nat :=
   match n with
   | O => O
@@ -276,9 +251,6 @@ Definition minustwo (n : nat) : nat :=
 Example minus_two_test: (minustwo (S (S (S (S O))))) = (S (S O)).
 Proof. simpl. reflexivity. Qed.
 
-Check S        : nat -> nat.
-Check pred     : nat -> nat.
-Check minustwo : nat -> nat.
 
 (* 
 However, there is a fundamental difference between S and the other two: 
@@ -393,7 +365,7 @@ Proof. simpl. reflexivity. Qed.
 Example test_factorial3: factorial (S (S (S O))) = S (S (S (S (S (S O))))). 
 Proof. simpl. reflexivity. Qed.
 
-Check factorial.
+
 End NatPlayground.
 
 Notation "x + y" := (plus x y)
@@ -405,7 +377,6 @@ Notation "x - y" := (minus x y)
 Notation "x * y" := (mult x y)
                        (at level 40, left associativity)
                        : nat_scope.
-Check ((0 + 1) + 1) : nat.
 
 (* Note the use of nested matches (we could also have used a simultaneous match, as we did in minus.) *)
 Fixpoint eqb (n m : nat) : bool :=
@@ -512,12 +483,7 @@ Proof.
   reflexivity. Qed. 
 
   (* Check is also used to examine statements of previously declared lemmas and theorems *)
-Check mult_n_O.
-(* ===> forall n : nat, 0 = n * 0 *)
-Check mult_n_Sm.
-(* ===> 
-forall n m : nat, n * m + n = n * S m 
-*)
+
 
 (* We can use the rewrite tactic with a previously proved theorem instead
  of a hypothesis from the context. If the statement of the previously proved theorem 
@@ -754,8 +720,7 @@ Fixpoint incr (m:bin) : bin :=
     | B0 m' => B1 m' 
   end. 
 
-Check mult.
-Compute mult 2 5. 
+
 
 Fixpoint bin_to_nat (m:bin) : nat := 
   match m with 

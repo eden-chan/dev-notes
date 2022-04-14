@@ -1,3 +1,3 @@
-(* Separate Compilation *)
-(* coq_makefile -f _CoqProject *.v -o Makefile *)
-(*  *)
+From LF Require Export Basics.
+
+Check day.
