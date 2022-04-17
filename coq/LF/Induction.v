@@ -268,20 +268,32 @@ Proof.
   - simpl. rewrite IHn'. reflexivity.  
 Qed. 
 
-Theorem mul_1_plus_r : forall m n : nat, 
-   m * (1 + n) = m + m * n.  
+Check mult_n_Sm.
+Check mul_0_r.
+Check mul_1.
+Theorem my_mult_n_Sm: forall (n m : nat),
+    n * (S m) = n + n * m.
+Proof.
+  intros n m.
+  induction n as [| n' IHn'].
+  { reflexivity. }
+  { simpl.
+    rewrite -> IHn'.
+    assert (swap: m + (n' + n' * m) = n' + (m + n' * m)).
+      { rewrite -> add_shuffle3. reflexivity. }
+    rewrite -> swap. 
+    reflexivity.   
+    }
+Qed.
+
+(* Theorem my_mult_n_Sm_2: forall (n m: nat), 
+  n * m + n = n * S m. 
 Proof. 
-  intros m n.  
-  induction m as [| m' IHm'].
-  - (* m = 0 *) simpl. reflexivity.
-  - (* m = S m' *) induction n as [| n' IHn'].
-    + (* n = 0 *) simpl. rewrite mul_1. rewrite mul_0_r. rewrite add_0_r. reflexivity.
-    + (* n = S n' *) rewrite IHn'.
-      
-      
-      assert (H: 1 + S n' = S (S n')).
-      { simpl.  reflexivity.  } 
-      rewrite H.  
+  intros n m. 
+  assert (swap: n * m + n )
+  rewrite add_comm. 
+
+       *)
     
 Theorem mul_comm : forall m n : nat,
   m * n = n * m.
@@ -289,5 +301,6 @@ Proof.
   intros n m. 
   induction n as [| n' IHn'].
   - (* n = 0 *) simpl. rewrite mul_0_r. reflexivity.
+  - (* n = S n' *) rewrite my_mult_n_Sm. simpl. 
 
   (* FILL IN HERE *) Admitted.
