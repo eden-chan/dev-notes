@@ -140,6 +140,13 @@ Proof.
                 rewrite <- plus_n_Sm. rewrite <- plus_n_Sm. simpl.  reflexivity.
 Qed.
 
+Theorem add_assoc_abc : forall a b c: nat, 
+  a + b + c = a + (b + c). 
+Proof. 
+  intros a b c.
+  rewrite add_assoc. 
+  reflexivity.
+Qed. 
 (* 2 stars *)
 
 Fixpoint double (n:nat) :=
@@ -305,14 +312,6 @@ Proof.
     }
 Qed.
 
-(* Theorem my_mult_n_Sm_2: forall (n m: nat), 
-  n * m + n = n * S m. 
-Proof. 
-  intros n m. 
-  assert (swap: n * m + n )
-  rewrite add_comm. 
-
-       *)
     
 Theorem mul_comm : forall m n : nat,
   m * n = n * m.
@@ -418,14 +417,69 @@ Proof.
                   reflexivity.
 Qed. 
 
-   
+Theorem mult_plus_distr_l : forall n m p: nat, 
+  p * (n + m) = (n * p) + (m * p).
+Proof. 
+  intros n m p.
+  rewrite mul_comm. 
+  rewrite mult_plus_distr_r.  
+  reflexivity.
+Qed. 
+(* S n' * (S m' * p' + S m') 
+  
+  S m' * p' * S n' + S m' * S n' 
+    rewrite mult_n_Sm. | n * m + n = n * S m
+    p' = m'
+
+    n*m === (S m' * S n') * p' + S m' * S n'  = S m' * S n'  * S p' qed
+
+      p' * (S n' * S m') + S m' * S n'
+
+      a * b + b = S a * b 
+
+        a + b + c = a + (b + c)
+  *)
+  Check mult_n_Sm.
+  Check my_mult_n_Sm. 
 
 
+Theorem mult_n_Sm_l: forall n m : nat,
+  m * n + n = n * S m.
+Proof. 
+  intros n m.
+  rewrite mul_comm. 
+  rewrite mult_n_Sm. 
+  reflexivity.
+Qed. 
 
-
-
-Admitted.
-Theorem mult_assoc : ∀ n m p : nat,
+Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [| n' IHn'].
+      - (* n = 0 *) induction m as [| m' IHm'].
+          + (* m = 0 *) induction p as [| p' IHp'].
+              * (* p = 0 *) simpl. reflexivity.
+              * (* p = S p' *)simpl. reflexivity.
+          + (* m = S m' *) induction p as [| p' IHp'].
+              * (* p = 0 *) simpl. reflexivity.
+              * (* p = S p' *) simpl.  reflexivity.
+      - (* n = S n' *) induction m as [| m' IHm'].
+          + (* m = 0 *) induction p as [| p' IHp'].
+              * (* p = 0 *) simpl. rewrite mul_0_r. reflexivity.
+              * (* p = S p' *) simpl. rewrite mul_0_r. simpl. reflexivity. 
+          + (* m = S m' *) induction p as [| p' IHp'].
+            * (* p = 0 *) rewrite mul_0_r. rewrite mul_0_r. rewrite mul_0_r. reflexivity. 
+            * (* p = S p' *)  
+              rewrite <- mult_n_Sm. rewrite mult_plus_distr_l. 
+              rewrite mul_comm. 
+              rewrite IHp'. 
+              rewrite mul_comm. 
+              assert (swap: S m' * S n' = S n' * S m').
+              { rewrite mul_comm. reflexivity. }
+              rewrite swap. 
+              rewrite <- mult_n_Sm. 
+              rewrite mult_n_Sm_l.
+              reflexivity. 
+Qed.
+              
+              
