@@ -481,5 +481,81 @@ Proof.
               rewrite mult_n_Sm_l.
               reflexivity. 
 Qed.
-              
-              
+
+
+(* 3 stars *)
+Inductive bin : Type :=
+  | Z
+  | B0 (n : bin)
+  | B1 (n : bin).
+
+Fixpoint incr (m:bin) : bin := 
+  match m with 
+    | Z => B1 Z 
+    | B1 m' => B0 (incr m')
+    | B0 m' => B1 m' 
+  end. 
+
+Fixpoint bin_to_nat (m:bin) : nat := 
+  match m with 
+    | Z => 0
+    | B1 m' => 1 + (2 * bin_to_nat m') 
+    | B0 m' => (2 * bin_to_nat m') 
+  end. 
+
+
+(* 3 stars USEFUL  *)
+(* 
+Prove that the following diagram commutes:
+                        incr
+              bin ----------------------> bin
+               |                           |
+    bin_to_nat |                           |  bin_to_nat
+               |                           |
+               v                           v
+              nat ----------------------> nat
+                             S
+
+*)
+
+
+Lemma S_S: forall a b: nat, 
+   S (a + S b) = S (S (a + b)).
+Proof.
+  intros a b. 
+  rewrite add_comm.
+  simpl.  
+  rewrite add_comm.
+  reflexivity.
+Qed.
+
+Theorem bin_to_nat_pres_incr : forall b : bin,
+  bin_to_nat (incr b) = 1 + bin_to_nat b.
+Proof.
+  induction b as [| b1 IHb1 | b1 IHb1].
+  - simpl. reflexivity.
+  - simpl. rewrite add_0_r. reflexivity.
+  - simpl. rewrite add_0_r. rewrite add_0_r. rewrite IHb1. simpl. rewrite S_S.  reflexivity.
+Qed. 
+
+Fixpoint nat_to_bin (n:nat) : bin :=
+  match n with 
+    | O => Z 
+    | S n' => incr (nat_to_bin n')
+  end. 
+  
+
+Example test_nat_to_bin0 : nat_to_bin 0 = Z. Proof. reflexivity. Qed. 
+Example test_nat_to_bin1 : nat_to_bin 1 = B1 Z. Proof. reflexivity. Qed. 
+Example test_nat_to_bin2 : nat_to_bin 2 = B0 (B1 Z). Proof. reflexivity. Qed. 
+Example test_nat_to_bin3 : nat_to_bin 3 = B1 (B1 Z). Proof. reflexivity. Qed. 
+
+Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
+Proof.
+  induction n as [| n' IHn']. 
+  - simpl. reflexivity. 
+  - simpl. rewrite bin_to_nat_pres_incr. simpl. rewrite IHn'. reflexivity.
+Qed. 
+
+
+(* Bin to Nat and Back to Bin (Advanced) *)
