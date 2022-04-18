@@ -294,9 +294,7 @@ Proof.
   - simpl. rewrite IHn'. reflexivity.  
 Qed. 
 
-Check mult_n_Sm.
-Check mul_0_r.
-Check mul_1.
+
 Theorem my_mult_n_Sm: forall (n m : nat),
     n * (S m) = n + n * m.
 Proof.
@@ -377,11 +375,6 @@ Proof.
   - reflexivity.  
 Qed. 
 
-Check mult_n_Sm. 
-Check add_assoc. 
-
-Check add_comm. 
-
 
 
 Theorem mult_plus_distr_r : forall n m p : nat,
@@ -425,23 +418,6 @@ Proof.
   rewrite mult_plus_distr_r.  
   reflexivity.
 Qed. 
-(* S n' * (S m' * p' + S m') 
-  
-  S m' * p' * S n' + S m' * S n' 
-    rewrite mult_n_Sm. | n * m + n = n * S m
-    p' = m'
-
-    n*m === (S m' * S n') * p' + S m' * S n'  = S m' * S n'  * S p' qed
-
-      p' * (S n' * S m') + S m' * S n'
-
-      a * b + b = S a * b 
-
-        a + b + c = a + (b + c)
-  *)
-  Check mult_n_Sm.
-  Check my_mult_n_Sm. 
-
 
 Theorem mult_n_Sm_l: forall n m : nat,
   m * n + n = n * S m.
@@ -559,3 +535,31 @@ Qed.
 
 
 (* Bin to Nat and Back to Bin (Advanced) *)
+Lemma double_incr : forall n : nat, 
+  double (S n) = S (S (double n)).
+Proof.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed. 
+
+(* prolly wrong, use Definition one liner instead. *)
+Fixpoint double_bin (b:bin) : bin:= 
+  match b with 
+  | Z => Z 
+  | B1 b' =>  (B0 (double_bin b'))
+  | B0 b' =>  double_bin b'
+end. 
+
+(* Example double_bin_zero : double_bin Z = Z. Proof. reflexivity. Qed. 
+Example double_bin_1 : double_bin (B1 Z) = (B0 (B1 Z)). Proof. reflexivity. Qed. 
+Example double_bin_2 : double_bin (B0 (B1 Z)) = (B0 (B0 (B1 Z))). Proof. reflexivity. Qed. 
+Example double_bin_3 : double_bin (B1 (B1 Z)) = (B0 (B1 (B1 Z))). Proof. reflexivity. Qed. 
+Example double_bin_4 : double_bin (B0 (B0 (B1 Z))) = (B0 (B0 (B0 (B1 Z)))). Proof. reflexivity. Qed. 
+ *)
+
+
+Lemma double_incr_bin : forall b:bin,
+    double_bin (incr b) = incr (incr (double_bin b)).
+Proof.
+  Abort.

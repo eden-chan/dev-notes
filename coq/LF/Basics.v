@@ -408,10 +408,27 @@ Proof. simpl. reflexivity. Qed.
 Example test_leb3: leb 5 4 = false. 
 Proof. simpl. reflexivity. Qed.
 
+Fixpoint geb (n m : nat) : bool := 
+  match n with 
+    | O => if (eqb m O) then true else false 
+    | S n' => 
+      match m with 
+        | O => true 
+        | S m' => geb n' m'
+      end
+end. 
+
+Example test_geb1: geb 2 0 = true. Proof. simpl. reflexivity. Qed.
+Example test_geb2: geb 2 2 = true. Proof. simpl. reflexivity. Qed.
+Example test_geb3: geb 4 5 = false. Proof. simpl. reflexivity. Qed.
+  
+
 Notation "x =? y" := (eqb x y) (at level 70) : nat_scope.
 Notation "x <=? y" := (leb x y) (at level 70) : nat_scope.
-Example test_leb3': (4 <=? 2) = false.
-Proof. simpl. reflexivity. Qed.
+Notation "x >=? y" := (geb x y) (at level 70) : nat_scope.
+Example test_leb3': (4 <=? 2) = false. Proof. simpl. reflexivity. Qed.
+Example test_geb3': (4 >=? 5) = false. Proof. simpl. reflexivity. Qed.
+
 
 Definition ltb (n m : nat) : bool := 
   andb (leb n m) (negb (eqb n m)).
