@@ -229,9 +229,7 @@ Formal proofs are useful in many ways, but they are not very efficient ways of c
 
   (* 3 stars *)
 
-  Check add_assoc. 
-  Check add_comm. 
-Theorem add_shuffle3 : forall n m p : nat,
+Theorem add_shuffle_bac : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
   intros n m p. 
@@ -244,6 +242,27 @@ Proof.
   rewrite H2. 
   reflexivity.
 Qed. 
+
+Theorem add_shuffle_acb: forall a b c : nat, 
+  a + (b + c) = a + (c + b).
+Proof.
+  intros a b c. 
+  assert (H: b + c = c + b).
+  { rewrite add_comm. reflexivity. }
+  rewrite H. 
+  reflexivity.
+Qed.
+
+Theorem add_shuffle_cba: forall a b c : nat, 
+  a + (b + c) = c + (b + a).
+Proof.
+  intros a b c. 
+  rewrite add_shuffle_acb. 
+  rewrite add_shuffle_bac. 
+  rewrite add_shuffle_acb. 
+  reflexivity.
+Qed.
+
 
 (* 
   n * (S m)
@@ -280,7 +299,7 @@ Proof.
   { simpl.
     rewrite -> IHn'.
     assert (swap: m + (n' + n' * m) = n' + (m + n' * m)).
-      { rewrite -> add_shuffle3. reflexivity. }
+      { rewrite -> add_shuffle_bac. reflexivity. }
     rewrite -> swap. 
     reflexivity.   
     }
@@ -301,6 +320,112 @@ Proof.
   intros n m. 
   induction n as [| n' IHn'].
   - (* n = 0 *) simpl. rewrite mul_0_r. reflexivity.
-  - (* n = S n' *) rewrite my_mult_n_Sm. simpl. 
+  - (* n = S n' *) simpl. rewrite my_mult_n_Sm.  rewrite IHn'. reflexivity.
+Qed. 
 
+
+
+Theorem leb_refl : forall n:nat,
+  (n <=? n) = true.
+Proof.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite IHn'. reflexivity.
+Qed. 
+
+Theorem zero_neqb_S : forall n:nat,
+  0 =? (S n) = false.
+Proof.
+  intros n.  simpl. reflexivity. Qed. 
+
+Theorem andb_false_r : forall b : bool,
+  andb b false = false.
+Proof.
+  intros b. destruct b. 
+  - reflexivity.
+  - reflexivity.
+Qed. 
+Theorem plus_leb_compat_l : forall n m p : nat,
+  n <=? m = true -> (p + n) <=? (p + m) = true.
+Proof.
+  intros n m p. 
+  intros H. 
+  induction p as [| p' IHp'].
+  - simpl. rewrite H. reflexivity.
+  - simpl. rewrite IHp'. reflexivity. 
+Qed. 
+Theorem S_neqb_0 : forall n:nat,
+  (S n) =? 0 = false.
+Proof.
+  reflexivity. Qed. 
+Theorem mult_1_l : forall n:nat, 1 * n = n.
+Proof.
+  induction n as [|n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite add_0_r. reflexivity.
+Qed. 
+Theorem all3_spec : forall b c : bool,
+  orb
+    (andb b c)
+    (orb (negb b)
+         (negb c))
+  = true.
+Proof.
+  intros [] [].
+  - reflexivity.  
+  - reflexivity.  
+  - reflexivity.  
+  - reflexivity.  
+Qed. 
+
+Check mult_n_Sm. 
+Check add_assoc. 
+
+Check add_comm. 
+
+
+
+Theorem mult_plus_distr_r : forall n m p : nat,
+  (n + m) * p = (n * p) + (m * p).
+Proof.
+    induction n as [| n' IHn'].
+    - (* n = 0 *) induction m as [| m' IHm'].
+        + (* m = 0 *) induction p as [| p' IHp'].
+            * (* p = 0 *) simpl. reflexivity.
+            * (* p = S p' *)simpl. reflexivity.
+        + (* m = S m' *) induction p as [| p' IHp'].
+            * (* p = 0 *) simpl. reflexivity.
+            * (* p = S p' *) simpl.  reflexivity.
+    - (* n = S n' *) induction m as [| m' IHm'].
+        + (* m = 0 *) induction p as [| p' IHp'].
+            * (* p = 0 *) rewrite add_0_r. rewrite mul_0_r. reflexivity.
+            * (* p = S p' *) rewrite add_0_r. rewrite mult_0_l. rewrite add_0_r. reflexivity.
+        + (* m = S m' *) induction p as [| p' IHp'].
+          * (* p = 0 *) rewrite mul_0_r. rewrite mul_0_r. rewrite mul_0_r. reflexivity. 
+          * (* p = S p' *) rewrite <- mult_n_Sm. rewrite IHp'. 
+              (* move terms to match n * m + n = n * Sm *)
+             rewrite add_shuffle_acb.
+             rewrite add_assoc. 
+             rewrite  add_comm. 
+            rewrite <- mult_n_Sm.
+              rewrite <- mult_n_Sm.
+                rewrite add_assoc. 
+                rewrite add_assoc. 
+                rewrite add_assoc.
+                assert (swap: S n' + S n' * p' = S n' * p' + S n').
+                { rewrite add_comm. reflexivity. } 
+                rewrite swap. 
+                  reflexivity.
+Qed. 
+
+   
+
+
+
+
+
+Admitted.
+Theorem mult_assoc : ∀ n m p : nat,
+  n * (m * p) = (n * m) * p.
+Proof.
   (* FILL IN HERE *) Admitted.
