@@ -555,9 +555,7 @@ Proof.
   - (* l1 = n l1' *)
     simpl. rewrite <- IHl1'. reflexivity.
 Qed. 
-Search nonzeros.
-Search rev. 
-Search app_assoc. 
+
 Lemma nonzeros_app : forall l1 l2 : natlist,
   nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
 Proof.
@@ -637,9 +635,6 @@ Proof.
       reflexivity.
 Qed. 
 
-Check count. 
-Search repeat. 
-Search count. 
 
 (* Write down an interesting theorem bag_count_sum 
 about bags involving the functions count and sum, 
@@ -660,10 +655,9 @@ Lemma rev_n : forall n:nat,
   rev ([n]) = [n].
 Proof. simpl. reflexivity. Qed. 
 
-Search append. 
 Lemma rev_empty : rev [] = []. Proof. reflexivity. Qed. 
 
-Search rev. 
+
 Theorem rev_injective : forall (l1 l2 : natlist),
   rev l1 = rev l2 -> l1 = l2.
 Proof.
@@ -796,9 +790,5 @@ Proof.
   intro H. 
   simpl. rewrite H. reflexivity. 
 Qed.
-
-
-
-
 
 End PartialMap. 

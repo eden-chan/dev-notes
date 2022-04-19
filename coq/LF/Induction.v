@@ -4,10 +4,6 @@ make <file.vo>
 *)
 From LF Require Export Basics.
 
-Check day.
-Check NatPlayground.factorial.
-
-
 Theorem add_0_r_firsttry : forall n:nat,
   n + 0 = n.
 
