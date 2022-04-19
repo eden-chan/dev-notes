@@ -732,10 +732,73 @@ Proof.
     simpl.  reflexivity. 
 Qed. 
 
+End NatList.
+
+Module PartialMap.
+Export NatList. (* make the definitions from NatList available here *)
 
 (* Partial Maps *)
-
+(* Internally, an id is just a number.
+Introducing a separate type by wrapping each nat with
+the tag Id makes definitions more readable and gives 
+us flexibility to change representations later if we want to. *)
 Inductive id : Type :=
   | Id (n : nat).
-  
-End NatList.
+
+Definition eqb_id (x1 x2 : id) :=
+  match x1, x2 with
+  | Id n1, Id n2 => n1 =? n2
+  end.
+Theorem eqb_id_refl : forall x : id, eqb_id x x = true.
+Proof.
+  intros x. 
+  destruct x as [x'].
+  simpl. 
+  rewrite eqbnat_refl'. 
+  reflexivity.
+Qed. 
+
+Inductive partial_map : Type :=
+  | empty
+  | record (i : id) (v : nat) (m : partial_map).
+Definition update (d : partial_map)
+                  (x : id) (value : nat)
+                  : partial_map :=
+  record x value d.
+
+Fixpoint find (k : id) (m : partial_map) : natoption := 
+  match m with 
+    | empty => None 
+    | record k' v m' => if (eqb_id k k') then Some v else find k m'
+  end.
+
+Definition map0 := 
+  (record (Id 0) 0 (record (Id 1) 1 (record (Id 2) 2 empty))).
+Example test_find0: find (Id 0) map0 = Some 0. Proof. reflexivity. Qed. 
+Example test_find1: find (Id 1) map0 = Some 1. Proof. reflexivity. Qed. 
+Example test_find2: find (Id 2) map0 = Some 2. Proof. reflexivity. Qed. 
+Example test_find3: find (Id 3) map0 = None. Proof. reflexivity. Qed. 
+Example test_find4: find (Id 3) empty = None. Proof. reflexivity. Qed. 
+
+Theorem update_eq :
+  forall (d : partial_map) (x : id) (v: nat),
+    find x (update d x v) = Some v.
+Proof.
+  intros d x v. 
+  simpl. rewrite eqb_id_refl. reflexivity. 
+Qed. 
+
+Theorem update_neq :
+  forall (d : partial_map) (x y : id) (o: nat),
+    eqb_id x y = false -> find x (update d y o) = find x d.
+Proof.
+  intros d x y o. 
+  intro H. 
+  simpl. rewrite H. reflexivity. 
+Qed.
+
+
+
+
+
+End PartialMap. 
