@@ -67,3 +67,80 @@ Check d mumble (b a 5).
 
 Check list nat. 
 End MumbleGrumble.
+
+(* Type Annotation Inference *)
+Fixpoint repeat' X x count : list X :=
+  match count with
+  | 0        => nil X
+  | S count' => cons X x (repeat' X x count')
+  end.
+Check repeat'
+  : forall X : Type, X -> nat -> list X.
+Check repeat
+  : forall X : Type, X -> nat -> list X.
+
+(* when Coq encounters a "hole" represented by underscore character _, 
+it will attempt to unify all locally available information
+ -- the type of the function being applied, the types of the other arguments, 
+and the type expected by the context in which the application appears -- to determine 
+    what concrete type should replace the _.
+     *)
+Fixpoint repeat'' X x count : list X :=
+  match count with
+  | 0        => nil _
+  | S count' => cons _ x (repeat'' _ x count')
+  end.
+
+Definition list123' :=
+  cons _ 1 (cons _ 2 (cons _ 3 (nil _))).
+
+(* Implicit Arguments *)
+
+(* The Arguments directive specifies the name of the function (or constructor) 
+and then lists the (leading) argument names to be treated as implicit, each surrounded by curly braces. *)
+Arguments nil {X}.
+Arguments cons {X}.
+Arguments repeat {X}.
+
+(* No need to supply type arg since it's explicitly told to be treated implict with Arguments declaration *)
+Definition list123'' := cons 1 (cons 2 (cons 3 nil)).
+
+Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
+  match count with
+  | 0        => nil
+  | S count' => cons x (repeat''' x count')
+  end.
+
+(* But don't make everything implicit. Consider the following list'  *)
+Inductive list' {X:Type} : Type :=
+  | nil'
+  | cons' (x : X) (l : list').
+(* Because X is declared as implicit for the entire 
+inductive definition including list' itself, we now 
+have to write just list' whether we are talking about 
+lists of numbers or booleans or anything else, rather than 
+list' nat or list' bool or whatever; this is a step too far. *)
+
+(* So let's stick with our original implementation of list but with 
+the Arguments for nil, cons defined to treat their leading terms as implicit *)
+
+(* So we explicitly supply the generic type arg X for the list constructor, but not for the function type arg *)
+Fixpoint app {X : Type} (l1 l2 : list X) : list X  := 
+    match l1 with 
+    | nil => l2 
+        | cons h t => cons h (app t l2)
+    end.  
+Fixpoint rev {X : Type} (l : list X) : list X := 
+    match l with 
+        | nil => nil 
+        | cons h t => app (rev t ) (cons h nil)
+    end. 
+Fixpoint length {X : Type} (l : list X) : nat :=
+    match l with 
+        | nil => 0
+        | cons _ t => 1 + length t 
+    end. 
+
+Example test_rev1 : rev (cons 1 (cons 2 nil)) = (cons 2 (cons 1 nil)). Proof. reflexivity. Qed.
+Example test_rev2: rev (cons true nil) = cons true nil. Proof. reflexivity. Qed.
+Example test_length1: length (cons 1 (cons 2 (cons 3 nil))) = 3. Proof. reflexivity. Qed.
