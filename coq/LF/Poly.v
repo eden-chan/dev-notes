@@ -144,3 +144,151 @@ Fixpoint length {X : Type} (l : list X) : nat :=
 Example test_rev1 : rev (cons 1 (cons 2 nil)) = (cons 2 (cons 1 nil)). Proof. reflexivity. Qed.
 Example test_rev2: rev (cons true nil) = cons true nil. Proof. reflexivity. Qed.
 Example test_length1: length (cons 1 (cons 2 (cons 3 nil))) = 3. Proof. reflexivity. Qed.
+
+    (* Supplying Type Arguments Explicitly *)
+Definition mynil : list nat := nil.
+
+(* Alternatively, we can force the implicit arguments to
+ be explicit by prefixing the function name with @. *)
+Check nil. 
+Check @nil : forall X : Type, list X.
+Definition mynil' := @nil nat.
+
+Notation "x :: y" := (cons x y)
+                     (at level 60, right associativity).
+Notation "[ ]" := nil.
+Notation "[ x ; .. ; y ]" := (cons x .. (cons y []) ..).
+Notation "x ++ y" := (app x y)
+                     (at level 60, right associativity).
+
+Definition list123''' := [1; 2; 3].
+
+Theorem app_nil_r : forall (X:Type), forall l:list X,
+  l ++ [] = l.
+Proof.
+ intros X l.
+ induction l as [| n l' IHl']. 
+ - (* l = [] *)
+    reflexivity.
+ - (* l = n :: l' *)
+    simpl. rewrite IHl'. reflexivity.
+Qed.  
+
+Theorem app_assoc : forall (X: Type), forall (l m n: list X),
+  l ++ m ++ n = (l ++ m) ++ n.
+Proof.
+    intros X l m n. 
+    induction l as [| x l' IHl'].
+    - (* l = [] *)
+        simpl. reflexivity.
+    - (* l = n :: l'*)
+        simpl. rewrite <- IHl'. reflexivity.
+Qed. 
+
+Lemma app_length : forall (X:Type) (l1 l2 : list X),
+  length (l1 ++ l2) = length l1 + length l2.
+Proof.
+    intros X l1 l2.
+    induction l1 as [| n l1' IHl1'].
+    - (* l1 = [] *)
+        reflexivity.
+    - (* l1 = n :: l1' *)
+        simpl. rewrite IHl1'. reflexivity. 
+Qed. 
+
+Theorem rev_app_distr: forall X (l1 l2 : list X),
+  rev (l1 ++ l2) = rev l2 ++ rev l1.
+Proof.
+    intros X l1 l2. 
+    induction l1 as [| n l1' IHl1' ].
+    - (* l1 = [] *)
+        simpl. rewrite app_nil_r. reflexivity.
+    - (* l1 = n :: l1' *)
+        simpl. rewrite IHl1'. rewrite <- app_assoc. reflexivity.
+Qed. 
+
+Theorem rev_involutive : forall (X : Type), forall (l : list X),
+  rev (rev l) = l.
+Proof.
+    intros X l. 
+    induction l as [| n l' IHl'].
+    - (* l = [] *)
+        reflexivity.
+    - (* l = n :: l' *)
+        simpl. rewrite rev_app_distr. rewrite IHl'. simpl. reflexivity.
+Qed. 
+
+(*  Polymorphic Pairs  *)
+Inductive prod (X Y : Type) : Type :=
+| pair (x : X) (y : Y).
+Arguments pair {X} {Y}.
+Notation "( x , y )" := (pair x y).
+Notation "X * Y" := (prod X Y) : type_scope.
+(* type_scope tells Coq that this abbreviation should only be used when parsing types, not when parsing expressions.  *)
+
+(* 
+It is easy at first to get (x,y) and X * Y confused. Remember that (x,y) is a value built from two other values, while X * Y is a type built from two other types. If x has type X and y has type Y, then (x,y) has type X * Y. 
+*)
+Definition fst {X Y : Type} (p : X * Y) : X :=
+  match p with
+  | (x, y) => x
+  end.
+Definition snd {X Y : Type} (p : X * Y) : Y :=
+  match p with
+  | (x, y) => y
+  end.    
+
+(* often called zip, but calling it combine to be consistent with coq's stdlib  *)
+Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
+        : list (X*Y) :=
+match lx, ly with
+    | [], _ => []
+    | _, [] => []
+    | x :: tx, y :: ty => (x, y) :: (combine tx ty)
+end.
+Compute (combine [1;2] [false;false;true;true]).
+(* [(1, false);(2, false)] *)
+
+
+(* USEFUL *)
+(* also known as unzip  *)
+Fixpoint split {X Y : Type} (l : list (X * Y)) : (list X) * (list Y):=
+    match l with 
+        | [] => ([],[])
+        | (x, y) :: t => let t' := split t in (x::(fst t'), (y::(snd t')))
+    end. 
+
+Example test_split0: split [(1,false);(2,false)] = ([1;2],[false;false]). Proof. reflexivity. Qed.
+Example test_split2: let t' := split [(1,false);(2,false)] in combine (fst t') (snd t') = [(1,false);(2,false)]. Proof. reflexivity. Qed.
+
+Module OptionPlayground.
+Inductive option (X:Type) : Type :=
+  | Some (x : X)
+  | None.
+Arguments Some {X}.
+Arguments None {X}.
+End OptionPlayground.
+
+Fixpoint nth_error {X : Type} (l : list X) (n : nat)
+                   : option X :=
+  match l with
+  | nil => None
+  | a :: l' => match n with
+               | O => Some a
+               | S n' => nth_error l' n'
+               end
+  end.
+Example test_nth_error1 : nth_error [4;5;6;7] 0 = Some 4. Proof. reflexivity. Qed.
+Example test_nth_error2 : nth_error [[1];[2]] 1 = Some [2]. Proof. reflexivity. Qed.
+Example test_nth_error3 : nth_error [true] 2 = None. Proof. reflexivity. Qed.
+
+Definition hd_error {X : Type} (l : list X) : option X :=
+    match l with 
+        | [] => None 
+        | h::t => Some h 
+    end. 
+
+    (* Force implicit arguments to be explicit *)
+Check @hd_error : forall X : Type, list X -> option X.
+Example test_hd_error1 : hd_error [1;2] = Some 1. Proof. reflexivity. Qed.
+Example test_hd_error2 : hd_error  [[1];[2]]  = Some [1]. Proof. reflexivity. Qed.
