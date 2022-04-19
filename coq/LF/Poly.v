@@ -292,3 +292,66 @@ Definition hd_error {X : Type} (l : list X) : option X :=
 Check @hd_error : forall X : Type, list X -> option X.
 Example test_hd_error1 : hd_error [1;2] = Some 1. Proof. reflexivity. Qed.
 Example test_hd_error2 : hd_error  [[1];[2]]  = Some [1]. Proof. reflexivity. Qed.
+
+
+    (* Higher Order Functions *)
+
+Definition doit3times {X : Type} (f : X->X) (n : X) : X :=
+  f (f (f n)).
+Check @doit3times : forall X : Type, (X -> X) -> X -> X.
+
+Definition minustwo (n : nat) : nat :=
+    (minus n 2).
+
+Example test_doit3times: doit3times  minustwo 9 = 3. Proof. reflexivity. Qed.
+Example test_doit3times': doit3times negb true = false. Proof. reflexivity. Qed.
+
+Fixpoint filter {X : Type} (pred : X -> bool) (l : list X) : list X :=
+    match l with 
+        | [] => []
+        | h :: t => match (pred h) with
+                        | true => h :: (filter pred t) 
+                        | false =>  (filter pred t)
+                    end 
+    end. 
+Example test_filter1: filter even [1;2;3;4] = [2;4]. Proof. reflexivity. Qed.
+Example test_filter2: filter negb [true;false;true] = [false]. Proof. reflexivity. Qed.
+Example test_filter3: filter even [2;4;6] = [2;4;6]. Proof. reflexivity. Qed.
+Example test_filter4: filter even [1;3;5] = []. Proof. reflexivity. Qed.
+Example test_filter5: filter even [] = []. Proof. reflexivity. Qed.
+
+Definition length_is_1 {X : Type} (l : list X) : bool :=
+  (length l) =? 1.
+Example test_filter6:
+    filter length_is_1
+           [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
+  = [ [3]; [4]; [8] ]. Proof. reflexivity. Qed.
+
+    (* use lambda *)
+Definition countoddmembers' (l:list nat) : nat :=
+  length (filter (fun n => negb (even n)) l).
+Example test_countoddmembers'1:   countoddmembers' [1;0;3;1;4;5] = 4. Proof. reflexivity. Qed.
+Example test_countoddmembers'2:   countoddmembers' [0;2;4] = 0. Proof. reflexivity. Qed.
+Example test_countoddmembers'3:   countoddmembers' nil = 0. Proof. reflexivity. Qed.
+Example test_anon_fun': doit3times (fun n => n * n) 2 = 256. Proof. reflexivity. Qed.
+
+Example test_filter6':
+    filter (fun l => (length l) =? 1)
+           [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
+  = [ [3]; [4]; [8] ].
+Proof. reflexivity. Qed.
+
+    Definition filter_even_gt7 (l : list nat) : list nat:=
+        filter (fun n => (andb (even n) (geb n 7))) l.
+Example test_filter_even_gt7_1 : filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8]. Proof. reflexivity. Qed.
+Example test_filter_even_gt7_2 : filter_even_gt7 [5;2;6;19;129] = []. Proof. reflexivity. Qed.
+
+Definition partition {X : Type}
+                     (test : X -> bool)
+                     (l : list X)
+                   : list X * list X
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Example test_partition1: partition odd [1;2;3;4;5] = ([1;3;5], [2;4]).
+(* FILL IN HERE *) Admitted.
+Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
+(* FILL IN HERE *) Admitted.
