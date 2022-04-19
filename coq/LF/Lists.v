@@ -222,7 +222,7 @@ Compute eqb 1 2.
 Fixpoint count (v : nat) (s : bag) : nat :=
   match s with 
     | [] => 0
-    | h :: t => if (eqb h v) then 1 + (count v t) else (count v t)
+    | h :: t => if (h =? v) then 1 + (count v t) else (count v t)
   end. 
 Example test_count0: count 1 [1;2;3;1;4;1] = 3. Proof. reflexivity. Qed. 
 Example test_count1: count 1 [1;1;1] = 3. Proof. reflexivity. Qed. 
@@ -603,4 +603,139 @@ Proof.
     reflexivity.
 Qed. 
 
+Theorem count_member_nonzero : forall (s : bag),
+  1 <=? (count 1 (1 :: s)) = true.
+Proof.
+  intros s. simpl. reflexivity.
+Qed. 
+
+
+(* USEFUL for later *)
+Theorem leb_n_Sn : forall  n,
+  n <=? (S n) = true.
+Proof.
+  intros n. induction n as [| n' IHn'].
+  - (* 0 *)
+    simpl. reflexivity.
+  - (* S n' *)
+    simpl. rewrite IHn'. reflexivity. Qed.
+ 
+
+Theorem remove_does_not_increase_count: forall (s : bag),
+  (count 0 (remove_one 0 s)) <=? (count 0 s) = true.
+Proof.
+  intros s. induction s as [| n s' IHs'].
+  - (* s = [] *)
+    simpl. reflexivity.
+  - (* s = n s' *)
+  induction n as [| n' IHn' ].
+    + (* n = O *)
+      simpl. rewrite leb_n_Sn. reflexivity. 
+    + (* n = S n' *) 
+      simpl. 
+      rewrite IHs'. 
+      reflexivity.
+Qed. 
+
+Check count. 
+Search repeat. 
+Search count. 
+
+(* Write down an interesting theorem bag_count_sum 
+about bags involving the functions count and sum, 
+and prove it using Coq. 
+(You may find that the difficulty of the proof depends
+ on how you defined count! 
+ Hint: If you defined count using =? you may find it
+ useful to know that destruct works on arbitrary
+ expressions, not just simple identifiers.) *)
+
+Theorem bag_count_sum: forall n: nat, forall b1 b2: bag, 
+      (count n b1) + (count n b2) = (count n (sum b1 b2)).
+Proof. 
+  intros n b1 b2. 
+Admitted. 
+
+Lemma rev_n : forall n:nat, 
+  rev ([n]) = [n].
+Proof. simpl. reflexivity. Qed. 
+
+Search append. 
+Lemma rev_empty : rev [] = []. Proof. reflexivity. Qed. 
+
+Search rev. 
+Theorem rev_injective : forall (l1 l2 : natlist),
+  rev l1 = rev l2 -> l1 = l2.
+Proof.
+  intros l1 l2. 
+  intros H. 
+  induction l1 as [| n1 l1' IHl1' ].
+  - (* l1 = [] *)
+    rewrite <- rev_involutive. 
+    rewrite <- H. 
+    reflexivity. 
+  - (* l1 = n1 l1' *)
+    rewrite <- rev_involutive. 
+    rewrite <- H.
+    rewrite rev_involutive. 
+    reflexivity.
+Qed. 
+
+Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
+  match l with
+  | nil => 42 (* can't tell if 42 is the input or error *)
+  | a :: l' => match n with
+               | 0 => a
+               | S n' => nth_bad l' n'
+               end
+  end.
+
+Inductive natoption : Type :=
+  | Some (n : nat)
+  | None.
+
+Fixpoint nth_error (l:natlist) (n:nat) : natoption :=
+  match l with
+  | [] => None
+  | h :: t => match n with
+               | O => Some h
+               | S n' => nth_error t n'
+               end
+  end.
+Example test_nth_error1 : nth_error [4;5;6;7] 0 = Some 4. Proof. reflexivity. Qed.
+Example test_nth_error2 : nth_error [4;5;6;7] 3 = Some 7. Proof. reflexivity. Qed.
+Example test_nth_error3 : nth_error [4;5;6;7] 9 = None. Proof. reflexivity. Qed.
+
+Definition option_elim (d : nat) (o : natoption) : nat :=
+  match o with
+  | Some n' => n'
+  | None => d
+  end.
+
+(* Fix the hd function from earlier so the default value is not hard-coded. *)
+Definition hd_error (l : natlist) : natoption := 
+  match l with 
+    | [] => None 
+    | h :: t => Some h 
+  end. 
+Example test_hd_error1 : hd_error [] = None. Proof. reflexivity. Qed. 
+Example test_hd_error2 : hd_error [1] = Some 1. Proof. reflexivity. Qed. 
+Example test_hd_error3 : hd_error [5;6] = Some 5. Proof. reflexivity. Qed. 
+
+Theorem option_elim_hd : forall (l:natlist) (default:nat),
+  hd default l = option_elim default (hd_error l).
+Proof.
+  intros l. induction l as [| n l' IHl'].
+  - (* l = [] *)
+    simpl. reflexivity. 
+  - (* l = n l' *)
+    simpl.  reflexivity. 
+Qed. 
+
+
+(* Partial Maps *)
+
+Inductive id : Type :=
+  | Id (n : nat).
+  
 End NatList.
