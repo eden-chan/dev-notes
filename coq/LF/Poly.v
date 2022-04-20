@@ -522,5 +522,116 @@ Proof.
     rewrite IHl'. 
     reflexivity.
 Qed. 
-End Exercises. 
 (* f h (fold f t b) *)
+
+(* In Coq, a function f : A → B → C really has the 
+type A → (B → C). That is, if you give f a value of type A,
+ it will give you function f' : B → C. If you then give 
+ f' a value of type B, it will return a value of type C. 
+ This allows for partial application, as in plus3. 
+ Processing a list of arguments with functions that 
+ return functions is called currying, in honor of the 
+ logician Haskell Curry.
+Conversely, we can reinterpret the type A → B → C as 
+(A * B) → C. This is called uncurrying. With an uncurried 
+binary function, both arguments must be given at once as 
+a pair; there is no partial application.
+ *)
+Definition prod_curry {X Y Z : Type}
+  (f : X * Y -> Z) (x : X) (y : Y) : Z := f (x, y).
+Definition prod_uncurry {X Y Z : Type}
+  (f : X -> Y -> Z) (p : X * Y) : Z := f (fst p) (snd p).
+
+(* Example test_map1: map (fun x => plus 3 x) [2;0;2] = [5;3;5]. Proof. reflexivity. Qed. *)
+Example test_map1': map (plus 3) [2;0;2] = [5;3;5]. Proof. reflexivity. Qed.
+Example test_curry_inverse :  prod_curry (prod_uncurry plus) 1 2 = plus 1 2. Proof. reflexivity. Qed.
+Check @prod_curry.
+(* forall X Y Z : Type, (X * Y -> Z) -> X -> Y -> Z *)
+Check @prod_uncurry.
+(* forall X Y Z : Type, (X -> Y -> Z) -> X * Y -> Z  *)
+Theorem uncurry_curry : forall (X Y Z : Type)
+                        (f : X -> Y -> Z)
+                        x y,
+  prod_curry (prod_uncurry f) x y = f x y.
+Proof.
+  reflexivity. 
+Qed.
+
+Theorem curry_uncurry : forall (X Y Z : Type)
+                        (f : (X * Y) -> Z) (p : X * Y),
+  prod_uncurry (prod_curry f) p = f p.
+Proof.
+  intros X Y Z f p. 
+  destruct p as [x y].
+  reflexivity. 
+Qed. 
+
+Module Church.
+(* 
+Church numerals, named after mathematician Alonzo Church, are 
+an alternate way of defining natural number n as a function 
+that takes a function f as a parameter and returns f iterated n times.
+*)
+Definition cnat := forall X : Type, (X -> X) -> X -> X.
+Definition one : cnat :=
+  fun (X : Type) (f : X -> X) (x : X) => f x.
+Definition two : cnat :=
+  fun (X : Type) (f : X -> X) (x : X) => f (f x).
+Definition three : cnat :=
+  fun (X : Type) (f : X -> X) (x : X) => f (f (f x)).
+(*
+Defining zero is somewhat trickier: 
+how can we "apply a function zero times"? 
+The answer is actually simple: just return the argument untouched.
+*)
+Definition zero : cnat :=
+  fun (X : Type) (f : X -> X) (x : X) => x.
+Definition succ (n : cnat) : cnat :=
+    fun (X : Type) (f : X -> X) (x : X) => f (n _ f x).
+
+Example succ_1 : succ zero = one. Proof. reflexivity. Qed.
+Example succ_2 : succ one = two. Proof. reflexivity. Qed.
+Example succ_3 : succ two = three. Proof. reflexivity. Qed.
+
+(* 
+TODO
+Definition pred (n : cnat) : cnat :=
+    match n with 
+      | zero => zero 
+      | one => one
+    end. 
+    
+    fun X f x => f (n _ f x).
+
+Example pred_1 : pred zero = zero. Proof. reflexivity. Qed.
+Example pred_2 : pred one = zero. Proof. reflexivity. Qed.
+Example pred_3 : pred two = one. Proof. reflexivity. Qed.       *)
+  
+Definition plus (n m : cnat) : cnat :=
+  fun X f x => n _ f (m _ f x).
+
+Example plus_1 : plus zero one = one. Proof. reflexivity. Qed. 
+Example plus_2 : plus two three = plus three two. Proof. reflexivity. Qed.
+Example plus_3 :
+  plus (plus two two) three = plus one (plus three three). Proof. reflexivity. Qed.
+
+Check plus one. 
+Check succ. 
+Check cnat.
+
+Definition mult (n m : cnat) : cnat :=
+    fun _ f x => n _ (m _ f) x.
+
+Example mult_1 : mult one one = one. Proof. reflexivity. Qed.
+Example mult_2 : mult zero (plus three three) = zero. Proof. reflexivity. Qed.
+Example mult_3 : mult two three = plus three three. Proof. reflexivity. Qed.
+
+Definition exp (n m : cnat) : cnat :=
+  fun _ f x => m _ (n _ (n _ f)) x. 
+
+Compute exp two two. 
+Example exp_1 : exp two two = plus two two. Proof. reflexivity. Qed.
+Example exp_2 : exp three zero = one. Proof. reflexivity. Qed.
+Example exp_3 : exp three two = plus (mult two (mult two two)) one. Proof. reflexivity. Qed.
+End Church. 
+End Exercises. 
