@@ -346,12 +346,95 @@ Proof. reflexivity. Qed.
 Example test_filter_even_gt7_1 : filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8]. Proof. reflexivity. Qed.
 Example test_filter_even_gt7_2 : filter_even_gt7 [5;2;6;19;129] = []. Proof. reflexivity. Qed.
 
+
+Fixpoint partition' {X : Type}
+                     (test : X -> bool)
+                     (l : list X)
+                   : list X * list X :=
+    match l with 
+      | [] => ([], [])
+      | h::t => let t' := (partition' test t) in match (test h) with 
+                                | true => (h::(fst t'), (snd t'))
+                                | false => ((fst t'), h::(snd t'))
+                                end
+    end. 
 Definition partition {X : Type}
                      (test : X -> bool)
                      (l : list X)
-                   : list X * list X
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-Example test_partition1: partition odd [1;2;3;4;5] = ([1;3;5], [2;4]).
-(* FILL IN HERE *) Admitted.
-Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
-(* FILL IN HERE *) Admitted.
+                   : list X * list X := ((filter test l),(filter (fun n => (negb (test n))) l)).
+
+Example test_partition1: partition even [1;2;3;4;5] = ([2;4], [1;3;5] ).  Proof. reflexivity. Qed.
+Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).  Proof. reflexivity. Qed.
+
+Fixpoint map { X Y : Type }  (f : X -> Y) (l : list X) : list Y :=
+    match l with 
+        | [] => []
+        | h :: t => (f h) :: (map f t) 
+    end. 
+Definition mapf := fun n => (geb n 2). 
+Example test_map0: (map mapf [1;2;3]) = [false;true;true].  Proof. reflexivity. Qed.
+Example test_map3:
+    map (fun n => [even n; (negb (even n))]) [2;1;2;5]
+  = [[true;false];[false;true];[true;false];[false;true]]. Proof. reflexivity. Qed.
+
+
+Lemma map_assoc : forall (X Y : Type) (f : X -> Y) (l1 l2 : list X) ,
+    (map f (l1 ++ l2)) = (map f l1) ++ (map f l2).
+Proof. 
+    intros X Y f l1 l2.
+    induction l1 as [| n l1' IHl1'].
+    - (* l1 = [] *)
+        reflexivity.
+    - (* l1 = n :: l1' *)
+        simpl. rewrite IHl1'. reflexivity.
+Qed. 
+
+
+Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
+  map f (rev l) = rev (map f l).
+Proof.
+  intros X Y f l. 
+  induction l as [| n l' IHl'].
+  - (* l = [] *)
+    reflexivity.
+  - (* l = n :: l' *)
+    simpl. rewrite <- IHl'.  rewrite map_assoc. simpl. reflexivity.
+Qed. 
+
+Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X)
+                   : list Y := 
+match l with 
+    | [] => []
+    | h :: t => (f h) ++ flat_map f t
+    end.  
+
+Example test_flat_map1:
+  flat_map (fun n => [n;n;n]) [1;5;4]
+  = [1; 1; 1; 5; 5; 5; 4; 4; 4]. Proof. reflexivity. Qed.
+
+Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
+                      : option Y :=
+  match xo with
+  | None => None
+  | Some x => Some (f x)
+  end.
+
+  (* 
+  Intuitively, the behavior of the fold operation is to insert a given binary operator f between every pair of elements in a given list. For example, fold plus [1;2;3;4] intuitively means 1+2+3+4. To make this precise, we also need a "starting element" that serves as the initial second input to f. So, for example,
+       fold plus [1;2;3;4] 0
+yields
+       1 + (2 + (3 + (4 + 0))).
+  *)
+Fixpoint fold {X Y: Type} (f : X->Y->Y) (l : list X) (b : Y)
+                         : Y :=
+  match l with
+  | nil => b
+  | h :: t => f h (fold f t b)
+  end.
+
+Example fold_example1 fold mult [1;2;3;4] 1 = 24. Proof. reflexivity. Qed. 
+    (* FOLD LEFT
+    1 * (2 * (3 * (4 * 1)))
+    *)
+Example fold_example2 :fold andb [true;true;false;true] true = false. Proof. reflexivity. Qed.
+Example fold_example3 :fold app  [[1];[];[2;3];[4]] [] = [1;2;3;4]. Proof. reflexivity. Qed.
