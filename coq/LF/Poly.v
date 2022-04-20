@@ -432,9 +432,95 @@ Fixpoint fold {X Y: Type} (f : X->Y->Y) (l : list X) (b : Y)
   | h :: t => f h (fold f t b)
   end.
 
-Example fold_example1 fold mult [1;2;3;4] 1 = 24. Proof. reflexivity. Qed. 
+Example fold_example1 : fold mult [1;2;3;4] 1 = 24. Proof. reflexivity. Qed. 
     (* FOLD LEFT
     1 * (2 * (3 * (4 * 1)))
     *)
 Example fold_example2 :fold andb [true;true;false;true] true = false. Proof. reflexivity. Qed.
 Example fold_example3 :fold app  [[1];[];[2;3];[4]] [] = [1;2;3;4]. Proof. reflexivity. Qed.
+
+Definition constfun {X: Type} (x: X) : nat -> X :=
+  fun (k:nat) => x.
+Definition ftrue := constfun true.
+Example constfun_example1 : ftrue 0 = true. Proof. reflexivity. Qed.
+Example constfun_example2 : (constfun 5) 99 = 5. Proof. reflexivity. Qed.
+(* "plus is a one-argument function that takes a nat and returns a one-argument function that takes another nat and returns a nat."
+  RIGHT ASSOCIATIVE / PARTIAL APPLICATION *)
+
+Definition plus3 := plus 3.
+Check plus3 : nat -> nat.
+Example test_plus3 :    plus3 4 = 7. Proof. reflexivity. Qed.
+Example test_plus3' :   doit3times plus3 0 = 9. Proof. reflexivity. Qed.
+Example test_plus3'' :  doit3times (plus 3) 0 = 9. Proof. reflexivity. Qed.
+
+Module Exercises.
+Definition fold_length {X : Type} (l : list X) : nat :=
+  fold (fun _ n => S n) l 0.
+Example test_fold_length1 : fold_length [4;7;0] = 3. Proof. reflexivity. Qed.
+
+Lemma fold_length_Sn : forall X (l : list X) (n : X),
+  fold_length (n :: l) = S (fold_length l).
+Proof. 
+  (* intros X l n. *)
+  reflexivity.
+  (* induction l as [| n' l' IHl'].
+  - (* l = [] *)
+    reflexivity.
+  - (* l = n' :: l' *)
+    simpl. reflexivity. *)
+Qed. 
+Lemma fold_length_assoc : forall X (l1 l2 : list X),
+  fold_length (l1 ++ l2) = fold_length l1 + fold_length l2.
+Proof. 
+  intros X l1 l2. 
+  induction l1 as [| n l1' IHl1'].
+  - (* l1 = [] *)
+    reflexivity.
+  - (* l1 = n :: l1' *)
+    assert (H: (n :: l1') ++ l2 = n :: (l1' ++ l2)). 
+      { reflexivity.  }
+    rewrite H. 
+    rewrite fold_length_Sn. 
+    rewrite fold_length_Sn. 
+    rewrite IHl1'. 
+    reflexivity.
+Qed. 
+
+Theorem fold_length_correct : forall X (l : list X),
+  fold_length l = length l.
+Proof.
+  intros X l. 
+  induction l as [| n l' IHl'].
+  - (* l = [] *)
+    reflexivity.
+  - (* l = n :: l' *)
+    simpl. rewrite <- IHl'. 
+    rewrite fold_length_Sn. reflexivity.
+Qed. 
+Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y :=
+  fold (fun a b => f a :: b) l []. 
+
+Example test_map0: map mapf [1;2;3] = fold_map mapf [1;2;3].  Proof. reflexivity. Qed.
+  (* [false;true;true] *)
+Example test_map3:
+    map (fun n => [even n; (negb (even n))]) [2;1;2;5]
+  = fold_map (fun n => [even n; (negb (even n))]) [2;1;2;5]. Proof. reflexivity. Qed.
+(*   [[true;false];[false;true];[true;false];[false;true]] *)
+
+Theorem fold_map_correct: forall X Y (f : X -> Y) (l : list X), 
+  fold_map f l = map f l. 
+Proof. 
+  intros X Y f l. 
+  induction l as [| n l' IHl'].
+  - (* l = [] *)
+    reflexivity.
+  - (* l = n :: l' *)
+    simpl. 
+    assert (H : fold_map f (n :: l') = f n :: fold_map f l' ).
+    { reflexivity. } 
+    rewrite H. 
+    rewrite IHl'. 
+    reflexivity.
+Qed. 
+End Exercises. 
+(* f h (fold f t b) *)
