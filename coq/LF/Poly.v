@@ -3,7 +3,8 @@ From LF Require Export Lists.
 polymorphism (abstracting functions over the types of the data they manipulate) 
 higher-order functions (treating functions as data).  
 *)
-
+Definition odd (n:nat) :=
+  (negb (even n)).
 (* Coq supports polymorphic inductive types *)
 Inductive list (X:Type) : Type :=
   | nil
@@ -627,9 +628,11 @@ Example mult_2 : mult zero (plus three three) = zero. Proof. reflexivity. Qed.
 Example mult_3 : mult two three = plus three three. Proof. reflexivity. Qed.
 
 Definition exp (n m : cnat) : cnat :=
-  fun _ f x => m _ (n _ (n _ f)) x. 
+  (* fun _ f => m _ ((n _ f)) .  *)
+  fun X => m (X -> X) (n X).
+ 
 
-Compute exp two two. 
+
 Example exp_1 : exp two two = plus two two. Proof. reflexivity. Qed.
 Example exp_2 : exp three zero = one. Proof. reflexivity. Qed.
 Example exp_3 : exp three two = plus (mult two (mult two two)) one. Proof. reflexivity. Qed.
