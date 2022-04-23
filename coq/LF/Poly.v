@@ -638,3 +638,107 @@ Example exp_2 : exp three zero = one. Proof. reflexivity. Qed.
 Example exp_3 : exp three two = plus (mult two (mult two two)) one. Proof. reflexivity. Qed.
 End Church. 
 End Exercises. 
+
+
+Module Entries.
+
+Inductive id : Type :=
+  | Id (id : nat)
+  | None. 
+Inductive eid : Type :=
+  | Eid (eid : nat). (* external id *)
+
+Inductive entry_op : Type := 
+  | Create 
+  | Update 
+  | Delete 
+  | Exist. 
+
+Inductive entry : Type :=
+  | Asset (id : id) (eid : eid) (op : entry_op) (amt : nat).
+  (* | Liability (id : id) (op : entry_op) (amt : nat)
+  | IncExp (id : id) (op : entry_op) (amt : nat). *)
+
+Definition eqb_eid (x1 x2 : eid) :=
+  match x1, x2 with
+  | Eid n1, Eid n2 => n1 =? n2
+  end.
+
+
+  (* if exist, remove one. if does not exist, do nothing. *)
+Fixpoint remove_one (l : list entry) (n : eid) : (list entry) := 
+  match l with 
+    | [] => []
+    | Asset id (Eid eid) op amt :: t => if (eqb_eid (Eid eid) n) then t else (Asset id (Eid eid) op amt) :: remove_one t n
+  end. 
+(* Reducer *)
+Fixpoint parse (l : list entry) (acc : list entry) : (list entry) :=
+  match l with 
+    | [] => acc
+    | Asset id (Eid eid) op amt :: t => match id, op with 
+                  | None, Create => parse t (acc ++ [(Asset None (Eid eid ) Create amt)])
+                  
+                    (* replace the create with update for eid *)
+                  | None,  Update => let acc' := remove_one acc (Eid eid) in parse t (acc' ++ [(Asset None (Eid eid) Create amt)]) 
+
+                    (* remove the create for eid *)
+                  | None,  Delete => let acc' := remove_one acc (Eid eid) in parse t acc' 
+
+
+                  | (Id id),  Update => let acc' := remove_one acc (Eid eid) in parse t (acc' ++ [(Asset (Id id) (Eid eid) Update amt)]) 
+                  | (Id id),  Delete => let acc' := remove_one acc (Eid eid) in parse t (acc' ++ [(Asset (Id id) (Eid eid) Delete amt)]) 
+                  
+                    (* Do nothing *)
+                  | (Id id),  Exist => parse t acc 
+
+                  (* Do nothing since these two case does not exist  *)
+                  | None,  Exist => parse t acc  
+                  | (Id id), Create => parse t acc 
+                  end 
+  end. 
+  (* Add will work regardless, unless you delete? *)
+  (*  Delete only if it contains ID *)
+
+(* Add *)
+Example parse_0 : parse [(Asset None (Eid 0) Create 0)] [] = [(Asset None (Eid 0) Create 0)].  Proof. reflexivity. Qed.
+Example parse_1 : parse [(Asset None (Eid 0) Create 0);(Asset None (Eid 0) Delete 0)] [] = [].  Proof. reflexivity. Qed.
+Example parse_2 : parse [(Asset None (Eid 0) Create 0);(Asset None (Eid 0) Update 1)] [] = [(Asset None (Eid 0) Create 1)].  Proof. reflexivity. Qed.
+Example parse_2' : parse [(Asset None (Eid 0) Create 0);(Asset None (Eid 0) Update 1);(Asset None (Eid 0) Update 2)] [] = [(Asset None (Eid 0) Create 2)].  Proof. reflexivity. Qed.
+
+  Example parse_3 : parse [(Asset None (Eid 0) Create 0);(Asset None (Eid 0) Update 1);(Asset None (Eid 0) Delete 1)] [] = [].  Proof. reflexivity. Qed.
+
+(* Delete *)
+Example parse_4 : parse [(Asset (Id 0) (Eid 0) Exist 0); (Asset (Id 0) (Eid 0) Delete 0)] [] = [(Asset (Id 0) (Eid 0) Delete 0)].  Proof. reflexivity. Qed.
+Example parse_5 : parse [(Asset (Id 0) (Eid 0) Exist 0); (Asset (Id 0) (Eid 0) Update 1); (Asset (Id 0) (Eid 0) Delete 1)] [] = [(Asset (Id 0) (Eid 0) Delete 1)].  Proof. reflexivity. Qed.
+
+(* Update *)
+Example parse_6 : parse [(Asset (Id 0) (Eid 0) Exist 0); (Asset (Id 0) (Eid 0) Update 1); (Asset (Id 0) (Eid 0) Update 2)] [] = [(Asset (Id 0) (Eid 0) Update 2)].  Proof. reflexivity. Qed.
+
+(* Combine *)
+Example parse_7 : 
+  parse 
+  [
+  (Asset (Id 0) (Eid 0) Exist 0); 
+  (Asset (Id 1) (Eid 1) Exist 0); 
+  (Asset None (Eid 2) Create 0); 
+  (Asset None (Eid 3) Create 0);  
+
+  (Asset (Id 0) (Eid 0) Update 1); 
+  (Asset (Id 0) (Eid 1) Update 1);
+  (Asset None (Eid 2) Update 1);  
+  (Asset None (Eid 3) Update 1);  
+
+  (Asset (Id 0) (Eid 0) Update 2); 
+  (Asset (Id 0) (Eid 1) Update 2);
+  (Asset None (Eid 2) Update 2);  
+  (Asset None (Eid 3) Update 2); 
+
+  (Asset (Id 0) (Eid 0) Delete 2); 
+  (Asset None (Eid 2) Delete 2)
+  ] [] 
+  =
+ [Asset (Id 0) (Eid 1) Update 2; Asset None (Eid 3) Create 2;
+Asset (Id 0) (Eid 0) Delete 2].
+  Proof. simpl. reflexivity. Qed.
+
+End Entries.

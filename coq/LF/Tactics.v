@@ -301,3 +301,135 @@ f = g, a1 = b1, ..., an = bn. At the same time,
 any of these subgoals that are simple enough 
 (e.g., immediately provable by reflexivity) will be 
 automatically discharged by f_equal *)
+
+Theorem S_inj : forall (n m : nat) (b : bool),
+  ((S n) =? (S m)) = b  ->
+  (n =? m) = b.
+Proof.
+  intros n m b H. simpl in H. apply H. Qed.
+
+
+Theorem silly4 : forall (n m p q : nat),
+  (n = m -> p = q) ->
+  m = n ->
+  q = p.
+Proof.
+  intros n m p q EQ H.
+  symmetry in H. apply EQ in H. symmetry in H.
+  apply H. Qed.
+
+Theorem double_injective_FAILED : forall n m,
+  double n = double m ->
+  n = m.
+Proof.
+  intros n m. induction n as [| n' IHn'].
+  - (* n = O *) simpl. intros eq. destruct m as [| m'] eqn:E.
+    + (* m = O *) reflexivity.
+    + (* m = S m' *) discriminate eq.
+  - (* n = S n' *) intros eq. destruct m as [| m'] eqn:E.
+    + (* m = O *) discriminate eq.
+    + (* m = S m' *) apply f_equal.
+Abort.
+(* be careful, when using induction, that you are not trying 
+to prove something too specific: When proving a property 
+involving two variables n and m by induction on n, it is 
+sometimes crucial to leave m generic. *)
+Theorem double_injective : forall n m,
+  double n = double m ->
+  n = m.
+Proof.
+  intros n. induction n as [| n' IHn'].
+  - (* n = O *) simpl. intros m eq. destruct m as [| m'] eqn:E.
+    + (* m = O *) reflexivity.
+    + (* m = S m' *) discriminate eq.
+  - (* n = S n' *)  intros m eq. destruct m as [| m'] eqn:E. 
+    + (* m = 0 *)
+      discriminate eq. 
+    + (* m = S m' *)
+      apply f_equal.
+      apply IHn'. 
+      simpl in eq. injection eq as goal. apply goal. Qed.
+
+Theorem eqb_true : forall n m,
+  n =? m = true -> n = m.
+Proof.
+  intros n.
+  induction n as [| n' IHn'].
+  - (* n = 0 *) destruct m as [| m'] eqn:E. 
+      + (* m = 0 *) reflexivity.
+      + (* m = S m' *) discriminate.
+  - (* n = S n' *) destruct m as [| m'] eqn:E. 
+      + (* m = 0 *) discriminate. 
+      + (* m = S m' *) 
+        intros H. simpl in H.  apply IHn' in H. 
+        apply f_equal. apply H. 
+Qed. 
+
+
+
+Theorem plus_n_n_injective : forall n m,
+  n + n = m + m ->
+  n = m.
+Proof.
+  intros n. 
+  induction n as [| n' IHn'].
+  - (* n = 0 *) destruct m as [| m'].
+    + (* m = 0 *) reflexivity.
+    + (* m = S m' *) simpl. intros H. discriminate H. 
+  - (* n = S n' *) destruct m as [| m']. 
+    + (* m = 0 *) intros H. discriminate H. 
+    + (* m = S m' *) intros H. simpl in H. 
+      assert (H' : m' + S m' = S m' + m' ).
+        { apply add_comm. }
+      rewrite add_comm in H. simpl in H. 
+      rewrite H' in H. simpl in H. 
+      injection H as goal. 
+      apply IHn' in goal. 
+      apply f_equal. 
+      apply goal. 
+Qed. 
+
+Theorem double_injective_take2 : forall n m,
+  double n = double m ->
+  n = m.
+Proof.
+  intros n m.
+  (* n and m are both in the context *)
+  generalize dependent n.
+  (* Now n is back in the goal and we can do induction on
+     m and get a sufficiently general IH. *)
+  induction m as [| m' IHm'].
+  - (* m = O *) simpl. intros n eq. destruct n as [| n'] eqn:E.
+    + (* n = O *) reflexivity.
+    + (* n = S n' *) discriminate eq.
+  - (* m = S m' *) intros n eq. destruct n as [| n'] eqn:E.
+    + (* n = O *) discriminate eq.
+    + (* n = S n' *) apply f_equal.
+      apply IHm'. injection eq as goal. apply goal.
+(* 
+Theorem: For any nats n and m, if double n = double m, then n = m.
+Proof: 
+Let m be a nat. We prove by induction on m that, for any n, 
+  if double n = double m then n = m.
+First, suppose m = 0, and suppose n is a number 
+  such that double n = double m. We must show that n = 0.
+Since m = 0, by the definition of double we have double n = 0. 
+There are two cases to consider for n.
+ If n = 0 we are done, since m = 0 = n, as required. 
+ Otherwise, if n = S n' for some n', we derive a contradiction: 
+  by the definition of double, we can calculate double n = S (S (double n')), 
+  but this contradicts the assumption that double n = 0.
+Second, suppose m = S m' and that n 
+  is again a number such that double n = double m. 
+  We must show that n = S m', with the induction hypothesis
+  that for every number s, if double s = double m' then s = m'.
+  By the fact that m = S m' and the definition of double, 
+  we have double n = S (S (double m')). 
+  There are two cases to consider for n.
+    If n = 0, then by definition double n = 0, a contradiction.
+Thus, we may assume that n = S n' for some n', and again by the definition of 
+double we have S (S (double n')) = S (S (double m')), which implies by injectivity 
+that double n' = double m'. Instantiating the induction hypothesis with n' thus allows 
+us to conclude that n' = m', and it follows immediately that S n' = S m'. 
+Since S n' = n and S m' = m, this is just what we wanted to show. ☐
+*)
