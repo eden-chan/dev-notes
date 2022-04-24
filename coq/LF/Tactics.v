@@ -584,3 +584,54 @@ Proof.
           apply IHl. 
           apply surjective_pairing.
 Qed. 
+
+Theorem bool_fn_applied_thrice :
+  forall (f : bool -> bool) (b : bool),
+  f (f (f b)) = f b.
+Proof.
+  intros. destruct (f b) eqn:Eqb. 
+  - destruct b eqn:Eqb2.
+    + rewrite Eqb. apply Eqb. 
+    + rewrite <- Eqb2 in Eqb. destruct (f (f b)) eqn:Eqb3. 
+      * rewrite <- Eqb.
+        assert (H:  f (f b)  =  f b).
+        { transitivity true. apply Eqb3. symmetry. apply Eqb. }
+        rewrite H. apply H. 
+      * rewrite <- Eqb. rewrite Eqb3. rewrite <- Eqb2. reflexivity.
+  -  destruct b eqn: Eqb2. 
+    + rewrite <- Eqb. rewrite <- Eqb2. destruct (f (f b)) eqn:Eqb3.
+      * transitivity false. apply Eqb. symmetry. rewrite Eqb2.  apply Eqb. 
+      * rewrite <- Eqb. rewrite <- Eqb2. transitivity false. apply Eqb3. rewrite Eqb2. symmetry. apply Eqb.
+    + rewrite Eqb. apply Eqb.
+Qed. 
+  
+Theorem eqb_sym : forall (n m : nat),
+  (n =? m) = (m =? n).
+Proof.
+  intros n. induction n as [| n' IHn' ].  
+  - destruct m as [| m'] eqn:Eqm. 
+    + reflexivity.
+    + reflexivity.
+  - destruct m as [| m'] eqn:Eqm. 
+    + reflexivity.
+    + simpl. apply IHn'. 
+Qed. 
+      (* destruct (n' =? m) eqn: Eqb. 
+       assert (H: n' = m).
+       { apply eqb_true. }
+        assert (H2: forall b:bool, ((S n') =? (S m)) = b  ->
+  (n' =? m) = b).
+      { apply S_inj. }
+          rewrite Eqb in H2.  symmetry in H2. 
+          
+        simpl. apply IHn'.
+        simpl.  apply IHn'.
+Qed.  *)
+
+
+Theorem eqb_trans : forall n m p,
+  n =? m = true ->
+  m =? p = true ->
+  n =? p = true.
+Proof.
+  (* FILL IN HERE *) Admitted.
