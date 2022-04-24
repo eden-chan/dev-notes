@@ -547,7 +547,7 @@ Proof.
         + (* e5 = false *) discriminate eq. Qed.
 
 
-Fixpoint combine {X Y : Type} (l1 : list X) (l2 : list Y) : list (X * Y) :=
+(* Fixpoint combine {X Y : Type} (l1 : list X) (l2 : list Y) : list (X * Y) :=
   match (l1, l2) with
     | ([], _) => []
     | (_, []) => []
@@ -558,7 +558,15 @@ Fixpoint split {X Y : Type} (l : list (X * Y)) : (list X) * (list Y) :=
   match l with
     | [] => ([], [])
     | (x, y)::t =>  let t' := split t in (x::(fst t'), (y::(snd t')))
-  end.
+  end. *)
+
+
+
+Theorem surjective_pairing:  forall X Y (p : X * Y), 
+          p = ((fst p), (snd p)).
+Proof. 
+  intros. destruct p as [ x y]. reflexivity. Qed. 
+
 
 Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
@@ -571,8 +579,8 @@ Proof.
           intros. simpl in H. 
           injection H as h1 h2. 
           rewrite <- h1. rewrite <- h2. 
-            simpl. 
-            apply f_equal. 
-            apply IHl. 
-(* apply surjective_pairing. *)
-Abort.
+          simpl. 
+          apply f_equal. 
+          apply IHl. 
+          apply surjective_pairing.
+Qed. 
