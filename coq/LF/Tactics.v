@@ -405,7 +405,8 @@ Proof.
   - (* m = S m' *) intros n eq. destruct n as [| n'] eqn:E.
     + (* n = O *) discriminate eq.
     + (* n = S n' *) apply f_equal.
-      apply IHm'. injection eq as goal. apply goal.
+      apply IHm'. injection eq as goal. apply goal. 
+Qed. 
 (* 
 Theorem: For any nats n and m, if double n = double m, then n = m.
 Proof: 
@@ -433,3 +434,145 @@ that double n' = double m'. Instantiating the induction hypothesis with n' thus 
 us to conclude that n' = m', and it follows immediately that S n' = S m'. 
 Since S n' = n and S m' = m, this is just what we wanted to show. ☐
 *)
+
+
+Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
+  length l = n ->
+  nth_error l n = None.
+Proof.
+  intros n X l. 
+  generalize dependent n. 
+  induction l as [| x l' IHl']. 
+  - (* l = [] *) destruct n as [| n'] eqn:E. 
+      + (* n = 0 *) reflexivity.
+      + (* n = S n' *)intros H. discriminate H. 
+  - (* l = x l' *) destruct n as [| n'] eqn:E. 
+    + (* n = 0 *)intros H. discriminate H. 
+    + (* l = x l' *) intros H. simpl in H. injection H as H'. apply IHl' in H'. 
+      simpl. apply H'. 
+Qed. 
+
+(* It sometimes happens that we need to manually unfold a name that has been introduced by a
+ Definition so that we can manipulate the expression it denotes. *)
+Definition square n := n * n.
+Lemma square_mult : forall n m, square (n * m) = square n * square m.
+Proof.
+  intros n m.
+  unfold square.
+  rewrite mult_assoc.
+  assert (H : n * m * n = n * n * m).
+    { rewrite mul_comm. apply mult_assoc. }
+  rewrite H. rewrite mult_assoc. reflexivity.
+Qed.
+
+
+Definition foo (x: nat) := 5.
+Fact silly_fact_1 : forall m, foo m + 1 = foo (m + 1) + 1.
+Proof.
+  intros m.
+  simpl.
+  reflexivity.
+Qed.
+
+Definition bar x :=
+  match x with
+  | O => 5
+  | S _ => 5
+  end.
+
+  Fact silly_fact_2_FAILED : forall m, bar m + 1 = bar (m + 1) + 1.
+Proof.
+  intros m.
+  simpl. (* Does nothing! *)
+Abort.
+Fact silly_fact_2 : forall m, bar m + 1 = bar (m + 1) + 1.
+Proof.
+  intros m.
+  destruct m eqn:E.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed.
+Fact silly_fact_2' : forall m, bar m + 1 = bar (m + 1) + 1.
+Proof.
+  intros m.
+  unfold bar.
+destruct m eqn:E.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+
+Definition sillyfun (n : nat) : bool :=
+  if n =? 3 then false
+  else if n =? 5 then false
+  else false.
+Theorem sillyfun_false : forall (n : nat),
+  sillyfun n = false.
+Proof.
+  intros n. unfold sillyfun.
+  destruct (n =? 3) eqn:E1.
+    - (* n =? 3 = true *) reflexivity.
+    - (* n =? 3 = false *) destruct (n =? 5) eqn:E2.
+      + (* n =? 5 = true *) reflexivity.
+      + (* n =? 5 = false *) reflexivity. Qed.
+ 
+        Definition sillyfun1 (n : nat) : bool :=
+  if n =? 3 then true
+  else if n =? 5 then true
+  else false.
+
+Theorem sillyfun1_odd_FAILED : forall (n : nat),
+  sillyfun1 n = true ->
+  odd n = true.
+Proof.
+  intros n eq. unfold sillyfun1 in eq.
+  destruct (n =? 3).
+  (* stuck... *)
+Abort.
+
+(* don't subsitute all existing occurences of n. use eqn to keep track of n *)
+
+Theorem sillyfun1_odd : forall (n : nat),
+  sillyfun1 n = true ->
+  odd n = true.
+Proof.
+  intros n eq. unfold sillyfun1 in eq.
+  destruct (n =? 3) eqn:Heqe3.
+      - (* e3 = true *) apply eqb_true in Heqe3.
+      rewrite -> Heqe3. reflexivity.
+    - (* e3 = false *) destruct (n =? 5) eqn:Heqe5.
+        + (* e5 = true *)
+          apply eqb_true in Heqe5.
+          rewrite -> Heqe5. reflexivity.
+        + (* e5 = false *) discriminate eq. Qed.
+
+
+Fixpoint combine {X Y : Type} (l1 : list X) (l2 : list Y) : list (X * Y) :=
+  match (l1, l2) with
+    | ([], _) => []
+    | (_, []) => []
+    | (h1 :: t1, h2 :: t2) => (h1, h2) :: (combine t1 t2)
+  end.
+
+Fixpoint split {X Y : Type} (l : list (X * Y)) : (list X) * (list Y) :=
+  match l with
+    | [] => ([], [])
+    | (x, y)::t =>  let t' := split t in (x::(fst t'), (y::(snd t')))
+  end.
+
+Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
+  split l = (l1, l2) ->
+  combine l1 l2 = l.
+Proof.
+  intros. generalize dependent l2. generalize dependent l1.  generalize dependent l.
+  induction l as [| [x y]].
+    -  (* l = [] *) intros. inversion H. simpl. reflexivity.
+    - (* l = (x,y) *) 
+          intros. simpl in H. 
+          injection H as h1 h2. 
+          rewrite <- h1. rewrite <- h2. 
+            simpl. 
+            apply f_equal. 
+            apply IHl. 
+(* apply surjective_pairing. *)
+Abort.
