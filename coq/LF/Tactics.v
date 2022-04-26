@@ -634,4 +634,55 @@ Theorem eqb_trans : forall n m p,
   m =? p = true ->
   n =? p = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. 
+  assert (H2:  n = m).
+  { apply eqb_true. apply H. }
+  rewrite H2. apply H0. 
+Qed. 
+
+
+(* 
+Hint: what property do you need of l1 and l2 for split 
+(combine l1 l2) = (l1,l2) to be true?) length l1 = length l2 *)
+Definition split_combine_statement {X Y : Type} (l1 : list X) (l2: list Y): Prop := 
+  length l1 = length l2 -> split (combine l1 l2 ) = (l1, l2).
+(* (": Prop" means that we are giving a name to a
+     logical proposition here.) *)
+
+Theorem split_combine : forall {X Y : Type} (l1 : list X) (l2: list Y),
+  split_combine_statement l1 l2.
+Proof.
+  intros. 
+  generalize dependent l2. 
+  unfold split_combine_statement.
+
+  induction l1 as [| n l1' IHl1'].
+  - simpl. destruct l2 as [| x l2'] eqn:Eqn.
+    + simpl. reflexivity.
+    + simpl. discriminate. 
+  - destruct l2 as [| x l2'] eqn:Eqn.
+    + simpl. discriminate. 
+    + intros H. 
+      simpl in H. 
+      injection H as H'.
+      apply IHl1' in H'. 
+      simpl. 
+     rewrite H'. 
+     simpl. 
+      reflexivity. 
+Qed. 
+
+Theorem filter_exercise : forall (X : Type) (test : X -> bool)
+                                 (x : X) (l lf : list X),
+  filter test l = x :: lf ->
+  test x = true.
+Proof.
+  intros. 
+  generalize dependent lf. 
+  generalize dependent x. 
+  induction l as [| n l' IHl'].
+  - simpl. discriminate. 
+  -  destruct (test n) eqn:eqtest.
+    + simpl. rewrite eqtest. Admitted.
+(* TODO LATER *)
+
