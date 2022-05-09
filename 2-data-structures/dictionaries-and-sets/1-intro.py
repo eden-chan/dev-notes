@@ -67,7 +67,6 @@ Pattern Matching 😊 with **extra must be the last argument in the pattern
 >>> match food:
 ...     case {'category': 'ice cream', **details}:
 ...         print(f'Ice cream details: {details}')
-...
 Ice cream details: {'flavor': 'vanilla', 'cost': 199}
 
 >>> from collections import abc
@@ -76,7 +75,76 @@ Ice cream details: {'flavor': 'vanilla', 'cost': 199}
 True
 >>> isinstance(my_dict, abc.MutableMapping)
 True
+
+my_dict.setdefault(key, []).append(new_value)
+# 1 lookup 
+if key not in my_dict:
+    my_dict[key] = []
+my_dict[key].append(new_value)
+# 3 lookups
+
+A ChainMap instance holds a list of mappings that can be searched as one.
+ The lookup is performed on each input mapping in the order it appears 
+ in the constructor call, and succeeds as soon as the key is found in 
+ one of those mappings. For example:
+
+>>> d1 = dict(a=1, b=3)
+>>> d2 = dict(a=2, b=4, c=6)
+>>> from collections import ChainMap
+>>> chain = ChainMap(d1, d2)
+>>> chain['a']
+1
+>>> chain['c']
+6
+
+The ChainMap instance does not copy the input mappings,
+ but holds references to them. Updates or insertions to a
+  ChainMap only affect the first input mapping. 
+>>> chain['c'] = -1
+>>> d1
+{'a': 1, 'b': 3, 'c': -1}
+>>> d2
+{'a': 2, 'b': 4, 'c': 6}
+
+
+A mapping that holds an integer count for each key.
+ Updating an existing key adds to its count. 
+>>> import collections
+>>> ct = collections.Counter('abracadabra')
+>>> ct
+Counter({'a': 5, 'b': 2, 'r': 2, 'c': 1, 'd': 1})
+>>> ct.update('aaaaazzz')
+>>> ct
+Counter({'a': 10, 'z': 3, 'b': 2, 'r': 2, 'c': 1, 'd': 1})
+>>> ct.most_common(3)
+[('a', 10), ('z', 3), ('b', 2)]
+
+Note that the 'b' and 'r' keys are tied in third place, but ct.most_common(3) shows only three counts.
+
+To use collections.Counter as a multiset, 
+pretend each key is an element in the set, 
+and the count is the number of occurrences of that element in the set.
+
+# Read only instance from dict
+>>> from types import MappingProxyType
+>>> d = {1: 'A'}
+>>> d_proxy = MappingProxyType(d)
+>>> d_proxy
+mappingproxy({1: 'A'})
+>>> d_proxy[1]
+'A'
+>>> d_proxy[2] = 'x'  
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: 'mappingproxy' object does not support item assignment
+>>> d[2] = 'B'
+>>> d_proxy  
+mappingproxy({1: 'A', 2: 'B'})
+>>> d_proxy[2]
+'B'
+
 """
+
 
 if __name__ == "__main__":
     import doctest
