@@ -143,8 +143,6 @@ class ClubMember:
 
 
 from dataclasses import dataclass
-from club import ClubMember
-
 @dataclass
 class HackerClubMember(ClubMember):                         
     """
@@ -165,9 +163,65 @@ class HackerClubMember(ClubMember):
             msg = f'handle {self.handle!r} already exists.'
             raise ValueError(msg)
         cls.all_handles.add(self.handle)                    
+"""
+only 9 blessed built-in types
+bytes   dict   float   frozenset   int   list   set   str   tuple
+case [str(name), _, _, (float(lat), float(lon))]:
+"""
 
-# bytes   dict   float   frozenset   int   list   set   str   tuple
 
+import typing
+
+class City(typing.NamedTuple):
+    """
+    >>> City.__match_args__
+    ('continent', 'name', 'country')
+
+    As you can see, __match_args__ declares the names of the attributes in the order they will be used in positional patterns.
+    """
+    continent: str
+    name: str
+    country: str
+
+
+cities = [
+    City('Asia', 'Tokyo', 'JP'),
+    City('Asia', 'Delhi', 'IN'),
+    City('North America', 'Mexico City', 'MX'),
+    City('North America', 'New York', 'US'),
+    City('South America', 'São Paulo', 'BR'),
+]
+def match_asian_cities():
+    results = []
+    for city in cities:
+        match city:
+            case City(continent='Asia'):
+                results.append(city)
+    return results
+
+def match_asian_countries_pos():
+    results = []
+    for city in cities:
+        match city:
+            case City('Asia', _, country):
+                results.append(country)
+    return results
+
+
+"""
+The main topic of this chapter was the data class builders 
+collections.namedtuple, typing.NamedTuple, and dataclasses.dataclass.
+ We saw that each generates data classes from descriptions provided as arguments 
+ to a factory function, or from class statements with type hints in the case of the latter two.
+In particular, both named tuple variants produce tuple subclasses, adding only the ability to access 
+fields by name, and providing a _fields class attribute listing the field names as a tuple of strings.
+
+how to extract instance data as dict, get names and default values of fields, making a new instance from an existing one. 
+Then, we warned against possible abuse of data classes defeating a basic principle of
+ object-oriented programming: data and the functions that touch it should be together 
+ in the same class. Classes with no logic may be a sign of misplaced logic.
+
+"""
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

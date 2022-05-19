@@ -20,14 +20,16 @@ A Binary Search algo is already provided in the bisect module of Python standard
 
 
 https://docs.python.org/3/howto/sorting.html
-Python lists have a built-in list.sort() method that modifies the list in-place. There is also a sorted() built-in function that builds a new sorted list from an iterable.
+Python lists have a built-in list.sort() method that modifies the list in-place. 
+There is also a sorted() built-in function that builds a new sorted list from an iterable.
 
 >>> sorted([5, 2, 3, 1, 4])
 [1, 2, 3, 4, 5]
 
 You can also use the list.sort() method. 
 It modifies the list in-place (and returns None to avoid confusion). 
-Usually it’s less convenient than sorted() - but if you don’t need the original list, it’s slightly more efficient.
+Usually it’s less convenient than sorted() -
+but if you don’t need the original list, it’s slightly more efficient.
 
 >>> a = [5, 2, 3, 1, 4]
 >>> a.sort()
@@ -46,7 +48,7 @@ key param specifies a function (or other callable) to be called on each list ele
 >>> sorted("This is a test string from Eden".split(), key=str.lower)
 ['a', 'Eden', 'from', 'is', 'string', 'test', 'This']
 
-A common pattern is to sort complex objects using some of the object’s indices as keys. For example:
+A common pattern is to sort complex objects using some of the object’s indices as keys.
 
 >>> student_tuples = [
 ...     ('john', 'A', 15),
@@ -83,7 +85,8 @@ to make accessor functions easier and faster.
 >>> sorted(student_objects, key=attrgetter('age'))
 [('dave', 'B', 10), ('jane', 'B', 12), ('john', 'A', 15)]
 
-The operator module functions allow multiple levels of sorting. For example, to sort by grade then by age:
+The operator module functions allow multiple levels of sorting. 
+For example, to sort by grade then by age:
 >>> sorted(student_tuples, key=itemgetter(1,2))
 [('john', 'A', 15), ('dave', 'B', 10), ('jane', 'B', 12)]
 
